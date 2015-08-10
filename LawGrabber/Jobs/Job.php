@@ -2,8 +2,31 @@
 
 namespace LawGrabber\Jobs;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 
+/**
+ * LawGrabber\Jobs\Job
+ *
+ * @property integer $id 
+ * @property string $service 
+ * @property string $method 
+ * @property string $parameters 
+ * @property string $group 
+ * @property integer $claimed 
+ * @property integer $finished 
+ * @property boolean $priority 
+ * @property-read Collection|\$related[] $morphedByMany
+ * @method static Builder|Job whereId($value)
+ * @method static Builder|Job whereService($value)
+ * @method static Builder|Job whereMethod($value)
+ * @method static Builder|Job whereParameters($value)
+ * @method static Builder|Job whereGroup($value)
+ * @method static Builder|Job whereClaimed($value)
+ * @method static Builder|Job whereFinished($value)
+ * @method static Builder|Job wherePriority($value)
+ */
 class Job extends Model
 {
     public $timestamps = false;

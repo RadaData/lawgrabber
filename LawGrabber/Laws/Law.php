@@ -2,8 +2,34 @@
 
 namespace LawGrabber\Laws;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 
+/**
+ * LawGrabber\Laws\Law
+ *
+ * @property string $id
+ * @property string $date
+ * @property boolean $status
+ * @property \LawGrabber\Laws\State $state
+ * @property boolean $has_text
+ * @property string $card
+ * @property integer $card_updated
+ * @property Revision $active_revision
+ * @property-read Collection|Issuer[] $issuers
+ * @property-read Collection|Type[] $types
+ * @property-read Collection|Revision[] $revisions
+ * @property-read Collection|\$related[] $morphedByMany
+ * @method static Builder|Law whereId($value)
+ * @method static Builder|Law whereDate($value)
+ * @method static Builder|Law whereStatus($value)
+ * @method static Builder|Law whereState($value)
+ * @method static Builder|Law whereHasText($value)
+ * @method static Builder|Law whereCard($value)
+ * @method static Builder|Law whereCardUpdated($value)
+ * @method static Builder|Law whereActiveRevision($value)
+ */
 class Law extends Model
 {
     const UNKNOWN = 0;

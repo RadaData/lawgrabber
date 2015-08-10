@@ -111,15 +111,6 @@ $app->register(LawGrabber\Jobs\JobsServiceProvider::class);
 $app->register(LawGrabber\Laws\LawsServiceProvider::class);
 $app->register(LawGrabber\Console\ConsoleServiceProvider::class);
 
-if (!function_exists('config_path')) {
-    function config_path()
-    {
-        return base_path() . '/config';
-    }
-}
-class_alias('Illuminate\Support\Facades\File', 'File');
-$app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
-
 ///////////////////////////////////////////////////////
 
 return $app;
