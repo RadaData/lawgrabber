@@ -1,0 +1,9 @@
+.idea
+.DS_Store
+/vendor
+bin/
+.env
+.env_proxies
+grab.sh
+send.sh
+storage/banned_proxies.txt
