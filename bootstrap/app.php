@@ -110,6 +110,7 @@ $app->register(LawGrabber\Downloader\DownloaderServiceProvider::class);
 $app->register(LawGrabber\Jobs\JobsServiceProvider::class);
 $app->register(LawGrabber\Laws\LawsServiceProvider::class);
 $app->register(LawGrabber\Console\ConsoleServiceProvider::class);
+//$app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 
 ///////////////////////////////////////////////////////
 
