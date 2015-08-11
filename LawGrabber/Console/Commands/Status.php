@@ -27,7 +27,7 @@ class Status extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle($web = false)
     {
         DB::beginTransaction();
 
@@ -109,6 +109,11 @@ class Status extends Command
 
 STATUS;
 
-        $this->info($status);
+        if ($web) {
+            return $status;
+        }
+        else {
+            $this->info($status);
+        }
     }
 }

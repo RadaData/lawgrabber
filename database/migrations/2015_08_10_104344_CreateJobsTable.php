@@ -22,10 +22,10 @@ class CreateJobsTable extends Migration
             $table->unsignedInteger('claimed')->default(0);
             $table->unsignedInteger('finished')->default(0);
             $table->tinyInteger('priority')->default(0);
-            $table->index('group');
-            $table->index('service');
-            $table->index('method');
-            $table->index(['claimed', 'finished', 'priority', 'id']);
+            $table->index('group', 'g');
+            $table->index('service', 's');
+            $table->index(['claimed', 'finished', 'priority', 'id'], 'cfpi');
+            $table->index(['finished', 'method'], 'fm');
         });
     }
 

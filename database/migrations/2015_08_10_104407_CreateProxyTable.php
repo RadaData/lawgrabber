@@ -18,9 +18,8 @@ class CreateProxyTable extends Migration
             $table->string('ip', 20);
             $table->unsignedInteger('last_used');
             $table->tinyInteger('in_use');
-            $table->unique('address');
-            $table->unique('ip');
-            $table->index(['in_use', 'last_used']);
+            $table->primary(['address', 'ip']);
+            $table->index(['in_use', 'last_used'], 'il');
         });
     }
 

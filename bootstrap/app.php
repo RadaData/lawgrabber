@@ -112,6 +112,17 @@ $app->register(LawGrabber\Laws\LawsServiceProvider::class);
 $app->register(LawGrabber\Console\ConsoleServiceProvider::class);
 //$app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 
+$app->get('/', function () {
+    $output = Cache::get('status');
+
+    if (!$output) {
+        $output = app()->make('command.lawgrabber.status')->handle(true);
+        Cache::put('status', $output, 1);
+    }
+
+    return "<pre>$output</pre>";
+});
+
 ///////////////////////////////////////////////////////
 
 return $app;

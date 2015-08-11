@@ -23,8 +23,8 @@ class CreateLawsTables extends Migration
             $table->unsignedInteger('card_updated')->default(0);
             $table->date('active_revision')->nullable();
             $table->primary('id');
-            $table->index('date');
-            $table->index(['status', 'date']);
+            $table->index(['status', 'date'], 'sd');
+            $table->index('date', 'd');
         });
 
         Schema::create('law_revisions', function(Blueprint $table)
@@ -37,7 +37,8 @@ class CreateLawsTables extends Migration
             $table->unsignedInteger('text_updated')->default(0);
             $table->longText('comment')->nullable();
             $table->tinyInteger('status')->nullable();
-            $table->unique(['date', 'law_id']);
+            $table->unique(['date', 'law_id'], 'dl');
+            $table->index('status', 's');
         });
 
         Schema::create('issuers', function(Blueprint $table)
@@ -49,38 +50,38 @@ class CreateLawsTables extends Migration
             $table->string('website', 255)->nullable();
             $table->string('url', 255);
             $table->tinyInteger('international');
-            $table->primary('id');
-            $table->index('name');
+            $table->primary('name');
+            $table->index('id', 'i');
         });
 
         Schema::create('law_issuers', function(Blueprint $table)
         {
             $table->string('law_id', 20);
             $table->string('issuer_name', 255);
-            $table->unique(['law_id', 'issuer_name']);
+            $table->primary(['law_id', 'issuer_name']);
         });
 
         Schema::create('types', function(Blueprint $table)
         {
             $table->string('id', 20);
             $table->string('name', 255);
-            $table->primary('id');
-            $table->index('name');
+            $table->primary('name');
+            $table->index('id', 'i');
         });
 
         Schema::create('law_types', function(Blueprint $table)
         {
             $table->string('law_id', 20);
             $table->string('type_name', 255);
-            $table->unique(['law_id', 'type_name']);
+            $table->primary(['law_id', 'type_name']);
         });
 
         Schema::create('states', function(Blueprint $table)
         {
             $table->string('id', 20);
             $table->string('name', 255);
-            $table->primary('id');
-            $table->index('name');
+            $table->primary('name');
+            $table->index('id', 'i');
         });
     }
 
