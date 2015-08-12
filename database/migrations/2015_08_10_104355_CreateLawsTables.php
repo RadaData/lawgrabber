@@ -15,16 +15,17 @@ class CreateLawsTables extends Migration
         Schema::create('laws', function(Blueprint $table)
         {
             $table->string('id', 20);
-            $table->date('date');
-            $table->tinyInteger('status')->nullable();
+            $table->date('date')->nullable();
+            $table->text('title')->nullable();
+            $table->tinyInteger('status')->default(0);
             $table->string('state', 50)->nullable();
-            $table->tinyInteger('has_text')->nullable();
+            $table->tinyInteger('has_text')->default(0);
             $table->longText('card')->nullable();
             $table->unsignedInteger('card_updated')->default(0);
             $table->date('active_revision')->nullable();
             $table->primary('id');
-            $table->index(['status', 'date'], 'sd');
-            $table->index('date', 'd');
+            $table->index(['status', 'date'], 'laws_sd');
+            $table->index('date', 'laws_d');
         });
 
         Schema::create('law_revisions', function(Blueprint $table)
@@ -36,9 +37,9 @@ class CreateLawsTables extends Migration
             $table->longText('text')->nullable();
             $table->unsignedInteger('text_updated')->default(0);
             $table->longText('comment')->nullable();
-            $table->tinyInteger('status')->nullable();
-            $table->unique(['date', 'law_id'], 'dl');
-            $table->index('status', 's');
+            $table->tinyInteger('status')->default(0);
+            $table->unique(['date', 'law_id'], 'law_revisions_dl');
+            $table->index('status', 'law_revisions_s');
         });
 
         Schema::create('issuers', function(Blueprint $table)
@@ -46,12 +47,12 @@ class CreateLawsTables extends Migration
             $table->string('id', 10);
             $table->string('name', 255);
             $table->string('full_name', 255)->nullable();
-            $table->string('group_name', 255);
+            $table->string('group_name', 255)->nullable();;
             $table->string('website', 255)->nullable();
-            $table->string('url', 255);
-            $table->tinyInteger('international');
+            $table->string('url', 255)->nullable();;
+            $table->tinyInteger('international')->default(0);
             $table->primary('name');
-            $table->index('id', 'i');
+            $table->index('id', 'issuers_i');
         });
 
         Schema::create('law_issuers', function(Blueprint $table)
@@ -66,7 +67,7 @@ class CreateLawsTables extends Migration
             $table->string('id', 20);
             $table->string('name', 255);
             $table->primary('name');
-            $table->index('id', 'i');
+            $table->index('id', 'types_i');
         });
 
         Schema::create('law_types', function(Blueprint $table)
@@ -81,7 +82,7 @@ class CreateLawsTables extends Migration
             $table->string('id', 20);
             $table->string('name', 255);
             $table->primary('name');
-            $table->index('id', 'i');
+            $table->index('id', 'states_i');
         });
     }
 

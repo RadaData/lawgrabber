@@ -1,6 +1,6 @@
 <?php
 
-class TestCase extends Laravel\Lumen\Testing\TestCase
+abstract class TestCase extends Laravel\Lumen\Testing\TestCase
 {
     /**
      * Creates the application.
@@ -12,27 +12,24 @@ class TestCase extends Laravel\Lumen\Testing\TestCase
         return require __DIR__.'/../bootstrap/app.php';
     }
 
-    public function beginDatabaseTransaction()
+    public function setUp()
     {
-        $this->app->make('db')->beginTransaction();
+        parent::setUp();
+        exec('cp ' . base_path() . '/tests/db/stub.sqlite ' . base_path() . '/tests/db/test.sqlite');
+        $this->runDatabaseMigrations();
+    }
+
+    public function runDatabaseMigrations()
+    {
+        $this->artisan('migrate');
 
         $this->beforeApplicationDestroyed(function () {
-            $this->app->make('db')->rollBack();
+            $this->artisan('migrate:rollback');
         });
     }
 
-    public function db()
+    protected function db()
     {
         return $this->app->make('db');
-    }
-
-    protected function assertArraysEqual($a, $b, $strict = false, $message = '')
-    {
-        if (count($a) !== count($b)) {
-            $this->fail($message);
-        }
-        sort($a);
-        sort($b);
-        $this->assertTrue(($strict && $a === $b) || $a == $b, $message);
     }
 }

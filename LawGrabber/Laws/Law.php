@@ -11,6 +11,7 @@ use Illuminate\Database\Query\Builder;
  *
  * @property string $id
  * @property string $date
+ * @property string $title
  * @property boolean $status
  * @property \LawGrabber\Laws\State $state
  * @property boolean $has_text
@@ -45,7 +46,7 @@ class Law extends Model
 
     public $incrementing = false;
     public $timestamps = false;
-    public $fillable = ['id', 'date', 'status', 'state', 'has_text', 'card', 'card_updated', 'text', 'active_revision', 'issuers', 'types'];
+    public $fillable = ['id', 'date', 'title', 'status', 'state', 'has_text', 'card', 'card_updated', 'active_revision'];
 
     public function issuers()
     {
@@ -116,6 +117,22 @@ class Law extends Model
     public function getActiveRevision()
     {
         return $this->active_revision()->first();
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasText()
+    {
+        return $this->has_text == static::HAS_TEXT;
+    }
+
+    /**
+     * @return bool
+     */
+    public function notHasText()
+    {
+        return $this->has_text == static::NO_TEXT;
     }
 }
 

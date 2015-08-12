@@ -24,5 +24,12 @@
         <env name="CACHE_DRIVER" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_DRIVER" value="sync"/>
+
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value="/users/Admin/www/radadata/lawgrabber/tests/db/test.sqlite"/>
+
+        <env name="DOWNLOADS_DIR" value="tests/fixtures/downloads"/>
+        <env name="MAX_CRAWL_DATE" value="false"/>
+        <env name="USE_PROXY" value="false"/>
     </php>
 </phpunit>

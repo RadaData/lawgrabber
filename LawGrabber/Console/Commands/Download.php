@@ -73,7 +73,7 @@ class Download extends Command
     {
         $this->jobsManager->deleteAll('download');
 
-        Law::where('status', '<', Law::DOWNLOADED_CARD)->where('date', '<', max_date())->chunk(200, function ($laws) {
+        Law::where('status', '<', Law::DOWNLOADED_CARD)->where('date', '<', max_date())->where('date', '<', max_date())->chunk(200, function ($laws) {
             foreach ($laws as $law) {
                 $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                     'id'          => $law->id,
@@ -83,11 +83,10 @@ class Download extends Command
         });
         Revision::where('status', Revision::NEEDS_UPDATE)->chunk(200, function ($revisions) {
             foreach ($revisions as $revision) {
-                $law = Law::find($revision->law_id);
                 $this->jobsManager->add('command.lawgrabber.download', 'downloadRevision', [
                     'law_id' => $revision->law_id,
                     'date'   => $revision->date,
-                ], 'download', $law->active_revision == $revision->date ? 0 : -1);
+                ], 'download');
             }
         });
     }
@@ -126,7 +125,8 @@ class Download extends Command
 
         DB::transaction(function () use ($law, $card) {
             $law->card = $card['html'];
-
+            $law->title = $card['title'];
+            $law->date = $card['date'];
             $law->issuers()->sync($card['meta'][Issuer::FIELD_NAME]);
             $law->types()->sync($card['meta'][Type::FIELD_NAME]);
             $law->state = isset($card['meta'][State::FIELD_NAME]) ? reset($card['meta'][State::FIELD_NAME]) : State::STATE_UNKNOWN;
@@ -146,7 +146,9 @@ class Download extends Command
                 if (isset($revision['needs_update']) && $revision['needs_update']) {
                     $data['status'] = Revision::NEEDS_UPDATE;
                 }
-                Revision::updateOrCreate($data);
+                $r = Revision::findROrNew($data['law_id'], $data['date']);
+                $r->save();
+                $r->update($data);
             }
             $law->active_revision = $card['active_revision'];
 
@@ -192,6 +194,10 @@ class Download extends Command
     {
         $law = Law::find($law_id);
         $revision = $law->getRevision($date);
+
+        if ($law->notHasText()) {
+            return $revision;
+        }
 
         if ($revision->status != Revision::NEEDS_UPDATE && !$re_download) {
             return $revision;

@@ -2,6 +2,7 @@
 
 namespace LawGrabber\Downloader;
 
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DomCrawler\Crawler;
 use JonnyW\PhantomJs\Client as PJClient;
 use LawGrabber\Laws\Law;
@@ -126,14 +127,21 @@ class Downloader
         $data['html'] = $crawler->html();
         $data['meta'] = [];
         $last_field = null;
-        $crawler->filterXPath('//h2[text()="Картка документа"]/following-sibling::dl[1]')->children()->each(function (Crawler $node) use (&$data, &$last_field) {
+        $crawler->filterXPath('//h2[text()="Картка документа"]/following-sibling::dl[1]')->children()->each(function (Crawler $node) use (&$data, &$last_field, $law_id) {
             if ($node->getNode(0)->tagName == 'dt') {
                 $last_field = rtrim($node->text(), ':');
                 $data['meta'][$last_field] = [];
             } elseif ($node->getNode(0)->tagName == 'dd') {
+                if ($last_field == 'Дати') {
+                    $data['date'] = $this->parseDate($node->filterXPath('//font')->text(), "Law date is not valid in card of '{$law_id}'");
+                }
                 $data['meta'][$last_field][] = $node->text();
             }
         });
+        if (!isset($data['date'])) {
+            throw new Exceptions\DocumentHasErrors("Law date is missing in '{$law_id}'");
+        }
+        $data['title'] = $crawler->filterXPath('//h1')->html();
 
         $data['has_text'] = (strpos($data['html'], 'Текст відсутній') === false && strpos($data['html'], 'Текст документа') !== false);
 
@@ -159,11 +167,16 @@ class Downloader
                     $data['active_revision'] = $data['revisions'][$last_revision]['date'];
                 }
             } elseif ($node->getNode(0)->tagName == 'dd') {
-                if (strpos($node->html(), '<a name="Current"></a>') !== false) {
+                $comment = $node->html();
+                if (strpos($comment, '<a name="Current"></a>') !== false) {
                     $data['active_revision'] = $data['revisions'][$last_revision]['date'];
                     $data['revisions'][$last_revision]['needs_update'] = true;
                 }
-                $data['revisions'][$last_revision]['comment'][] = str_replace('<a name="Current"></a>', '', $node->html());
+
+                $comment = str_replace('<a name="Current"></a>', '', $comment);
+                $comment = preg_replace('|<u>(.*?)</u>|', '$1', $comment);
+
+                $data['revisions'][$last_revision]['comment'][] = $comment;
             }
         });
         foreach ($data['revisions'] as $date => &$revision) {
@@ -428,7 +441,7 @@ class Downloader
      */
     public function getDownloadsDir()
     {
-        return base_path() . env('DOWNLOADS_DIR', '/../downloads');
+        return base_path() . '/' . trim(env('DOWNLOADS_DIR', '../downloads'), '/');
     }
 
     /**
@@ -600,8 +613,13 @@ class Downloader
             $revision_date = $default_date;
         }
         else {
-            $raw_date = crawler($html)->filterXPath('//div[@id="pan_title"]/*/font[@color="#004499"]/b')->text();
-            $revision_date = $this->parseDate($raw_date, "Revision date has not been found in text of $url");
+            try {
+                $raw_date = crawler($html)->filterXPath('//div[@id="pan_title"]/*/font[@color="#004499" or @color="#666666"]/b')->text();
+                $revision_date = $this->parseDate($raw_date);
+            }
+            catch (\Exception $e) {
+                throw new Exceptions\WrongDateException("Revision date has not been found in text of $url");
+            }
         }
         return $revision_date;
     }

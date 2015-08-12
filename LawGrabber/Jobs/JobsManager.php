@@ -182,7 +182,7 @@ class JobsManager
         Job::updateOrCreate([
             'service'    => $service,
             'method'     => $method,
-            'parameters' => $parameters,
+            'parameters' => json_encode($parameters),
             'group'      => $group,
             'priority'   => $priority,
         ]);
