@@ -30,10 +30,9 @@ use Illuminate\Database\Query\Builder;
 class Job extends Model
 {
     public $timestamps = false;
-    public $fillable = ['service', 'method', 'parameters', 'group', 'claimed', 'finished', 'priority'];
+    public $fillable = ['id', 'service', 'method', 'parameters', 'group', 'claimed', 'finished', 'priority'];
     protected $casts = [
         'parameters' => 'array',
-        'finished' => 'bool',
     ];
 
     public function execute()

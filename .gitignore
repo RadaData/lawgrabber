@@ -7,3 +7,4 @@ bin/
 grab.sh
 send.sh
 storage/banned_proxies.txt
+tests/db/test.sqlite
