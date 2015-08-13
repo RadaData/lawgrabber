@@ -73,18 +73,6 @@ class Start extends Command
      */
     public function handle()
     {
-        print('fixed parms: ' . DB::table('jobs')->where('parameters', 'like', '"{%')->count());
-
-        DB::table('jobs')->where('parameters', 'like', '"{%')->chunk(500, function($jobs) {
-            foreach ($jobs as $job) {
-                DB::table('jobs')->where('id', $job->id)->update(['parameters' => json_decode($job->parameters)]);
-            }
-        });
-
-        print('fixed parms: ' . DB::table('jobs')->where('parameters', 'like', '"{%')->count());
-
-        die();
-
         if ($this->option('single')) {
             $output = [];
             exec('pgrep -l -f "^php artisan start"', $output);
