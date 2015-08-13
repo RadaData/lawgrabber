@@ -569,9 +569,17 @@ class Downloader
         if ($html == '' && ($type != '403')) {
             return '{document is empty}';
         }
-        if (strpos($html, '</body>') === false && ($type != '403' && $type != '404')) {
+        if (strpos($html, '</body>') === false &&($type != '403' && $type != '404')) {
             return '{document is not fully downloaded}';
         }
+        //if (($type == 'error' || $type == 'all') &&
+        //    (strpos($html, 'class=txt') === false &&
+        //        strpos($html, 'class="txt') === false &&
+        //        strpos($html, 'hdr2') === false &&
+        //        strpos($html, 'valid txt') === false
+        //    )) {
+        //    return true;
+        //}
         if ($type == 'all') {
             $words = array_merge($this->stop_words['404'], $this->stop_words['403']);
         } else {
