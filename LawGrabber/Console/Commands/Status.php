@@ -71,7 +71,7 @@ class Status extends Command
         }
 
         $output = [];
-        exec('pgrep -l -f "^php console.php"', $output);
+        exec('pgrep -l -f "^php artisan start"', $output);
         if (count($output)) {
             $currently_running = 'RUNNING';
         }
