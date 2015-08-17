@@ -217,6 +217,7 @@ class JobsManager
      */
     public function cleanup()
     {
+        Job::where('finished', '>', 0)->where('finished', '<', time() - 3600 * 24)->delete();
         Job::where('claimed', '<>', 0)->update(['claimed' => 0]);
     }
 

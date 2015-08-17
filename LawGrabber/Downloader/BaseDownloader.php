@@ -130,9 +130,14 @@ class BaseDownloader
                     continue;
                 }
 
-                $output .= '-' . $status . '-OK';
+                try {
+                    $result = $this->doProcess($html, $status, $options, $process_callback);
+                }
+                catch (\Exception $e) {
+                    continue;
+                }
 
-                $result = $this->doProcess($html, $status, $options, $process_callback);
+                $output .= '-' . $status . '-OK';
 
                 if ($options['save']) {
                     $this->saveFile($save_as ?: $url, $html);
@@ -467,7 +472,7 @@ class BaseDownloader
     {
         foreach ($arr as $a) {
             if (stripos($str, $a) !== false) {
-                return $str;
+                return $a;
             }
         }
 

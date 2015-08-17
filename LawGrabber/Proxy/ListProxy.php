@@ -37,7 +37,7 @@ class ListProxy implements IProxyProvider
         }
 
         foreach ($this->proxy_list as $proxy) {
-            $ip = preg_replace('|:.*|', '', $proxy);
+            $ip = trim(preg_replace('|:.*|', '', $proxy));
             if (array_search($ip, $banned) === false) {
                 $proxies[$proxy] = $ip;
             }
