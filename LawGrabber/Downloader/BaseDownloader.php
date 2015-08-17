@@ -130,6 +130,10 @@ class BaseDownloader
                     continue;
                 }
 
+                if ($options['save']) {
+                    $this->saveFile($save_as ?: $url, $html);
+                }
+
                 try {
                     $result = $this->doProcess($html, $status, $options, $process_callback);
                 }
@@ -138,10 +142,6 @@ class BaseDownloader
                 }
 
                 $output .= '-' . $status . '-OK';
-
-                if ($options['save']) {
-                    $this->saveFile($save_as ?: $url, $html);
-                }
 
                 return $result;
 
