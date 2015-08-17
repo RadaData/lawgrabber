@@ -119,7 +119,7 @@ class Download extends Command
         } catch (\Exception $e) {
             $message = str_replace('ShvetsGroup\Service\Exceptions\\', '', get_class($e)) .
                 ($e->getMessage() ? ': ' . $e->getMessage() : '');
-            throw new JobChangePriorityException($message, -10);
+            throw new JobChangePriorityException($message, -15);
         }
 
         DB::transaction(function () use ($law, $card) {
@@ -226,7 +226,7 @@ class Download extends Command
         catch (\Exception $e) {
             $message = str_replace('ShvetsGroup\Service\Exceptions\\', '', get_class($e)) .
                 ($e->getMessage() ? ': ' . $e->getMessage() : '');
-            throw new JobChangePriorityException($message, -10);
+            throw new JobChangePriorityException($message, -15);
         }
 
         DB::transaction(function () use ($law, $revision, $data) {
