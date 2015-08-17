@@ -39,11 +39,7 @@ class Job extends Model
     {
         _log('==== Job ==== #' . $this->id . ' ' . $this->service . '->' . $this->method . '(' . json_encode($this->parameters, JSON_UNESCAPED_UNICODE) . ')', 'title');
 
-        if ($this->service) {
-            $func = [app()->make($this->service), $this->method];
-        } else {
-            $func = $this->method;
-        }
+        $func = $this->getFunc();
 
         try {
             call_user_func_array($func, $this->parameters);
@@ -51,13 +47,44 @@ class Job extends Model
         }
         catch(\Exception $e) {
             if ($e instanceof Exceptions\JobChangePriorityException) {
-                _log('JOB#' . $this->id . ' FAILURE(' . $e->getMessage() . '). Priority changed to ' . $e->newPriority, 'red');
-                $this->update(['priority' => $e->newPriority]);
+                $this->increment('priority', $e->newPriority);
+                if ($this->priority <= -20) {
+                    $this->fail();
+                    _log('JOB#' . $this->id . ' FAILURE(' . $e->getMessage() . '). Job deleted.', 'red');
+
+                }
+                else {
+                    _log('JOB#' . $this->id . ' ERROR(' . $e->getMessage() . '). Priority changed by ' . $e->newPriority, 'red');
+
+                }
             }
             else {
-                _log('JOB#' . $this->id . ' FAILURE(' . str_replace('LawGrabber\Service\Exceptions\\', '', get_class($e)) . ': ' . $e->getMessage() . ')', 'red');
+                _log('JOB#' . $this->id . ' ERROR(' . str_replace('LawGrabber\Service\Exceptions\\', '', get_class($e)) . ': ' . $e->getMessage() . ')', 'red');
             }
         }
+    }
+
+    private function getFunc($error = false)
+    {
+        $method = $error ? $this->method . 'Fail' : $this->method;
+
+        if ($this->service) {
+            $func = [app()->make($this->service), $method];
+        } else {
+            $func = $method;
+        }
+        return $func;
+    }
+
+    public function fail()
+    {
+        $func = $this->getFunc(true);
+
+        if (is_callable($func)) {
+            call_user_func_array($func, $this->parameters);
+        }
+
+        $this->delete();
     }
 }
 

@@ -47,6 +47,9 @@ class Status extends Command
         $revisions_downloaded = Revision::where('status', Revision::UP_TO_DATE)->count();
         $revisions_downloaded_p = round(($revisions_downloaded / ($revisions_count ?: ($revisions_downloaded ?: 1))) * 100);
 
+        $cards_errors = Law::where('status', Law::DOWNLOAD_ERROR)->count();
+        $revisions_errors = Revision::where('status', Revision::DOWNLOAD_ERROR)->count();
+
         $jobs_count = Job::where('finished', 0)->count();
         $jobs_last_10_minutes = Job::where('finished', '>', time() - 600)->count();
         $jobs_last_hour = Job::where('finished', '>', time() - 3600)->count();
@@ -95,6 +98,10 @@ class Status extends Command
 === Downloaded:
          Cards: {$cards_downloaded} / {$discovered_count} ({$cards_downloaded_p}%)
      Revisions: {$revisions_downloaded} / {$revisions_count} ({$revisions_downloaded_p}%)
+
+===     Errors:
+         Cards: {$cards_errors}
+     Revisions: {$revisions_errors}
 
 === Jobs: {$currently_running}
     Todo: {$jobs_count} {$jobs_completion_time}
