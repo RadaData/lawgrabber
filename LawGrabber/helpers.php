@@ -116,7 +116,7 @@ function job_manager() {
 }
 
 /**
- * @return \LawGrabber\Downloader\Downloader
+ * @return \LawGrabber\Downloader\BaseDownloader
  */
 function downloader() {
     return app()->make('lawgrabber.downloader');
@@ -124,22 +124,22 @@ function downloader() {
 
 function download($url, $options = [])
 {
-	return downloader()->download($url, $options);
+	return app()->make('lawgrabber.downloader')->download($url, $options);
 }
 
 function downloadList($url, $options = [])
 {
-	return downloader()->downloadList($url, $options);
+	return app()->make('lawgrabber.list_downloader')->downloadList($url, $options);
 }
 
 function downloadCard($law_id, $options = [])
 {
-	return downloader()->downloadCard($law_id, $options);
+	return app()->make('lawgrabber.card_downloader')->downloadCard($law_id, $options);
 }
 
 function downloadRevision($law_id, $date, $options = [])
 {
-	return downloader()->downloadRevision($law_id, $date);
+	return app()->make('lawgrabber.revision_downloader')->downloadRevision($law_id, $date);
 }
 
 function shortURL($url)

@@ -56,6 +56,8 @@ class DownloadCommandTest extends TestCase
 
     public function testDownloadCard()
     {
+        $this->assertTrue(downloader()->isDownloaded('/laws/card/254к/96-вр'));
+
         Law::firstOrCreate(['id' => '254к/96-вр']);
         $law = $this->obj->downloadCard('254к/96-вр');
 
@@ -76,6 +78,9 @@ class DownloadCommandTest extends TestCase
             'comment'      => 'Тлумачення, підстава - <a href="/laws/show/v005p710-14" target="_blank">v005p710-14</a>',
             'status'       => Revision::NEEDS_UPDATE,
         ], $law->getActiveRevision()->toArray());
+
+
+        $this->assertTrue(downloader()->isDownloaded('/laws/card/2952-17'));
 
         Law::firstOrCreate(['id' => '2952-17']);
         $law = $this->obj->downloadCard('2952-17');
@@ -108,6 +113,12 @@ class DownloadCommandTest extends TestCase
 
     public function testDownloadRevision()
     {
+        $this->assertTrue(downloader()->isDownloaded('/laws/card/254к/96-вр'));
+        $this->assertTrue(downloader()->isDownloaded('/laws/show/254к/96-вр/ed20140515/page'));
+        $this->assertTrue(downloader()->isDownloaded('/laws/show/254к/96-вр/ed20140515/page2'));
+        $this->assertTrue(downloader()->isDownloaded('/laws/show/254к/96-вр/ed20140515/page3'));
+        $this->assertTrue(downloader()->isDownloaded('/laws/show/254к/96-вр/ed20140515/page4'));
+
         Law::firstOrCreate(['id' => '254к/96-вр']);
         $law = $this->obj->downloadCard('254к/96-вр');
         $revision = $this->obj->downloadRevision('254к/96-вр', '2014-05-15');
@@ -117,6 +128,9 @@ class DownloadCommandTest extends TestCase
         $this->assertEquals($law->active_revision()->first()->text, $text);
         $this->assertEquals($revision->status, Revision::UP_TO_DATE);
 
+
+        $this->assertTrue(downloader()->isDownloaded('/laws/card/2952-17'));
+        $this->assertTrue(downloader()->isDownloaded('/laws/show/2952-17/ed20110201/page'));
         Law::firstOrCreate(['id' => '2952-17']);
         $law = $this->obj->downloadCard('2952-17');
         $revision = $this->obj->downloadRevision('2952-17', '2011-02-01');

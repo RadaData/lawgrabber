@@ -124,7 +124,7 @@ class Download extends Command
         }
 
         DB::transaction(function () use ($law, $card) {
-            $law->card = $card['html'];
+            $law->card = $card['card'];
             $law->title = $card['title'];
             $law->date = $card['date'];
             $law->issuers()->sync($card['meta'][Issuer::FIELD_NAME]);
