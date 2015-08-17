@@ -38,11 +38,11 @@ class Law extends Model
     const NO_TEXT = 10;
 
     const NOT_DOWNLOADED = 0;
-    const DOWNLOAD_ERROR = 10;
     const DOWNLOADED_BUT_NEEDS_UPDATE = 4;
     const DOWNLOADED_CARD = 5;
     const DOWNLOADED_REVISIONS = 10;
     const DOWNLOADED_RELATIONS = 15;
+    const DOWNLOAD_ERROR = 100;
     const SAVED = 100;
 
     public $incrementing = false;

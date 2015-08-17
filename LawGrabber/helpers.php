@@ -105,7 +105,7 @@ function container()
 
 function max_date()
 {
-	return env('MAX_CRAWL_DATE');
+	return env('MAX_CRAWL_DATE', date('Y-m-d'));
 }
 
 /**

@@ -74,7 +74,7 @@ class Download extends Command
     {
         $this->jobsManager->deleteAll('download');
 
-        Law::where('status', '<', Law::DOWNLOADED_CARD)->where('date', '<', max_date())->where('date', '<', max_date())->chunk(200, function ($laws) {
+        Law::where('status', '<', Law::DOWNLOADED_CARD)->where('date', '<', max_date())->chunk(200, function ($laws) {
             foreach ($laws as $law) {
                 $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                     'id'          => $law->id,
