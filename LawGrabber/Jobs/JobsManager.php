@@ -159,7 +159,9 @@ class JobsManager
                 $query->where('method', $method);
             }
             $job = $query->first();
-            $job->update(['claimed' => time()]);
+            if ($job) {
+                $job->update(['claimed' => time()]);
+            }
         });
 
         return $job;
