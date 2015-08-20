@@ -75,7 +75,7 @@ class Start extends Command
     {
         if ($this->option('single')) {
             $output = [];
-            exec('pgrep -l -f "^php artisan start"', $output);
+            exec('pgrep -l -f "^php (.*?)artisan start"', $output);
             foreach ($output as $line) {
                 $pid = preg_replace('|([0-9]+)(\s.*)|', '$1', $line);
                 if ($pid != getmypid()) {
