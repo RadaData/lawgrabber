@@ -43,7 +43,6 @@ class Law extends Model
     const DOWNLOADED_REVISIONS = 10;
     const DOWNLOADED_RELATIONS = 15;
     const DOWNLOAD_ERROR = 100;
-    const SAVED = 100;
 
     public $incrementing = false;
     public $timestamps = false;
