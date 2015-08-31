@@ -42,10 +42,10 @@ class Status extends Command
         $most_recent_age = $most_recent_diff ? $most_recent_diff . ' days ago' : 'up to date';
 
         $cards_downloaded = Law::where('status', Law::DOWNLOADED_CARD)->count();
-        $cards_downloaded_p = round(($cards_downloaded / ($discovered_count ?: ($cards_downloaded ?: 1))) * 100);
+        $cards_downloaded_p = floor(($cards_downloaded / ($discovered_count ?: ($cards_downloaded ?: 1))) * 100);
         $revisions_count = Revision::where('status', '<', Revision::NO_TEXT)->count();
         $revisions_downloaded = Revision::where('status', Revision::UP_TO_DATE)->count();
-        $revisions_downloaded_p = round(($revisions_downloaded / ($revisions_count ?: ($revisions_downloaded ?: 1))) * 100);
+        $revisions_downloaded_p = floor(($revisions_downloaded / ($revisions_count ?: ($revisions_downloaded ?: 1))) * 100);
 
         $cards_errors = Law::where('status', Law::DOWNLOAD_ERROR)->count();
         $revisions_errors = Revision::where('status', Revision::DOWNLOAD_ERROR)->count();
