@@ -29,6 +29,7 @@ use Illuminate\Database\Query\Builder;
  */
 class Job extends Model
 {
+    const ERROR = 2147483648;
     public $timestamps = false;
     public $fillable = ['id', 'service', 'method', 'parameters', 'group', 'claimed', 'finished', 'priority'];
     protected $casts = [
@@ -84,7 +85,7 @@ class Job extends Model
             call_user_func_array($func, $this->parameters);
         }
 
-        $this->delete();
+        $this->update(['finished' => self::ERROR, 'claimed' => 0]);
     }
 }
 
