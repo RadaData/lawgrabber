@@ -78,8 +78,8 @@ class Discover extends Command
 
         $this->discoverNewLaws($this->reset);
 
-        $this->jobsManager->launch(50, 'discover', Discover::class, 'discoverDailyLawList');
-        $this->jobsManager->launch(50, 'discover', Discover::class, 'discoverDailyLawListPage');
+        $this->jobsManager->launch(50, 'discover', 'command.lawgrabber.discover', 'discoverDailyLawList');
+        $this->jobsManager->launch(50, 'discover', 'command.lawgrabber.discover', 'discoverDailyLawListPage');
 
         return true;
     }
