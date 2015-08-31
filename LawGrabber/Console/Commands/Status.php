@@ -98,19 +98,19 @@ class Status extends Command
 
         $cards_discovered = number_format($cards_discovered);
         $l = strlen($cards_discovered);
-        $cards_downloaded = str_pad(number_format($cards_downloaded), $l);
-        $cards_needs_update = str_pad(number_format($cards_needs_update), $l);
-        $cards_with_text = str_pad(number_format($cards_with_text), $l);
-        $cards_without_text = str_pad(number_format($cards_without_text), $l);
-        $cards_errors = str_pad(number_format($cards_errors), $l);
+        $cards_downloaded = str_pad(number_format($cards_downloaded), $l, ' ', STR_PAD_LEFT);
+        $cards_needs_update = str_pad(number_format($cards_needs_update), $l, ' ', STR_PAD_LEFT);
+        $cards_with_text = str_pad(number_format($cards_with_text), $l, ' ', STR_PAD_LEFT);
+        $cards_without_text = str_pad(number_format($cards_without_text), $l, ' ', STR_PAD_LEFT);
+        $cards_errors = str_pad(number_format($cards_errors), $l, ' ', STR_PAD_LEFT);
 
         $revisions_count = number_format($revisions_count);
         $l = strlen($revisions_count);
-        $revisions_with_text = str_pad(number_format($revisions_with_text), $l);
-        $revisions_without_text = str_pad(number_format($revisions_without_text), $l);
-        $revisions_downloaded = str_pad(number_format($revisions_downloaded), $l);
-        $revisions_needs_update = str_pad(number_format($revisions_needs_update), $l);
-        $revisions_errors = str_pad(number_format($revisions_errors), $l);
+        $revisions_with_text = str_pad(number_format($revisions_with_text), $l, ' ', STR_PAD_LEFT);
+        $revisions_without_text = str_pad(number_format($revisions_without_text), $l, ' ', STR_PAD_LEFT);
+        $revisions_downloaded = str_pad(number_format($revisions_downloaded), $l, ' ', STR_PAD_LEFT);
+        $revisions_needs_update = str_pad(number_format($revisions_needs_update), $l, ' ', STR_PAD_LEFT);
+        $revisions_errors = str_pad(number_format($revisions_errors), $l, ' ', STR_PAD_LEFT);
 
         $jobs_count = number_format($jobs_count);
         $jobs_discovery = number_format($jobs_discovery);
