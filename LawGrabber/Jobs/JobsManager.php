@@ -61,7 +61,7 @@ class JobsManager
                     continue;
                 }
 
-                if (!$this->count()) {
+                if (!$this->count($group, $service, $method)) {
                     if ($wait_if_no_jobs) {
                         sleep(1000);
                         continue;
@@ -226,9 +226,19 @@ class JobsManager
     /**
      * See how many jobs there are.
      */
-    public function count()
+    public function count($group = null, $service = null, $method = null)
     {
-        return Job::count();
+        $query = Job::where('claimed', 0)->where('finished', 0);
+        if ($group) {
+            $query->where('group', $group);
+        }
+        if ($service) {
+            $query->where('service', $service);
+        }
+        if ($method) {
+            $query->where('method', $method);
+        }
+        return $query->count();
     }
 
 }
