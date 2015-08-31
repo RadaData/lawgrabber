@@ -75,7 +75,7 @@ class Start extends Command
     {
         Law::whereHasText(Law::NO_TEXT)->chunk(200, function($laws){
             foreach ($laws as $law) {
-                DB::table('law_revisions')->where('law_id', $law->id)->update('status', 5);
+                DB::table('law_revisions')->where('law_id', $law->id)->update(['status' => 5]);
             }
         });
 
