@@ -53,7 +53,7 @@ class Status extends Command
         $revisions_without_text = Revision::where('status', Revision::NO_TEXT)->count();
         $revisions_needs_update = Revision::where('status', Revision::NEEDS_UPDATE)->count();
         $revisions_downloaded = Revision::where('status', Revision::UP_TO_DATE)->count();
-        $revisions_downloaded_p = floor(($revisions_with_text / ($revisions_count ?: ($revisions_with_text ?: 1))) * 100);
+        $revisions_downloaded_p = floor(($revisions_downloaded / ($revisions_with_text ?: ($revisions_downloaded ?: 1))) * 100);
         $revisions_errors = Revision::where('status', Revision::DOWNLOAD_ERROR)->count();
 
         $jobs_count = Job::where('finished', 0)->count();
