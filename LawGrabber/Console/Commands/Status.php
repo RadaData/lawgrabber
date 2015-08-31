@@ -43,7 +43,7 @@ class Status extends Command
 
         $cards_downloaded = Law::where('status', Law::DOWNLOADED_CARD)->count();
         $cards_downloaded_p = floor(($cards_downloaded / ($cards_discovered ?: ($cards_downloaded ?: 1))) * 100);
-        $cards_needs_update = Revision::where('status', '<', Law::DOWNLOADED_CARD)->count();
+        $cards_needs_update = Law::where('status', '<', Law::DOWNLOADED_CARD)->count();
         $cards_with_text = Law::where('has_text', '<', Law::HAS_TEXT)->count();
         $cards_without_text = Law::where('has_text', Law::NO_TEXT)->count();
         $cards_errors = Law::where('status', Law::DOWNLOAD_ERROR)->count();
