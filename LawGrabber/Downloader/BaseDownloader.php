@@ -106,12 +106,8 @@ class BaseDownloader
                 return $result;
 
             }
-            catch (Exceptions\RevisionDateNotFound $e) {
-                throw $e;
-            }
             catch (\Exception $e) {
                 unlink($file_path);
-                throw $e;
             }
         }
 

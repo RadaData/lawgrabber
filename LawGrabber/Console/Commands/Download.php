@@ -132,7 +132,7 @@ class Download extends Command
 
             $law->has_text = $card['has_text'] ? $law->has_text = Law::HAS_TEXT : $law->has_text = Law::NO_TEXT;
 
-            foreach ($card['revisions'] as $date => &$revision) {
+            foreach ($card['revisions'] as &$revision) {
                 $data = [
                     'law_id'  => $revision['law_id'],
                     'date'    => $revision['date'],
