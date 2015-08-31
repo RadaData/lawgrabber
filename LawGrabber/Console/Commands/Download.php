@@ -139,7 +139,7 @@ class Download extends Command
                     'comment' => $revision['comment']
                 ];
                 // We should be careful with statuses, since we don't want to re-download already downloaded revisions.
-                if (isset($revision['no_text']) && $revision['no_text']) {
+                if ($law->notHasText() || (isset($revision['no_text']) && $revision['no_text'])) {
                     $data['status'] = Revision::NO_TEXT;
                 }
                 if (isset($revision['needs_update']) && $revision['needs_update']) {

@@ -73,6 +73,13 @@ class Start extends Command
      */
     public function handle()
     {
+        Law::whereHasText(Law::NO_TEXT)->chunk(200, function($laws){
+            foreach ($laws as $law) {
+                DB::table('law_revisions')->where('law_id', $law->id)->update('status', 5);
+            }
+        });
+
+        die();
         if ($this->option('single')) {
             $output = [];
             exec('pgrep -l -f "^php (.*?)artisan start"', $output);
