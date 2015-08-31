@@ -105,7 +105,11 @@ class BaseDownloader
 
                 return $result;
 
-            } catch (\Exception $e) {
+            }
+            catch (Exceptions\RevisionDateNotFound $e) {
+                throw $e;
+            }
+            catch (\Exception $e) {
                 unlink($file_path);
             }
         }
@@ -136,6 +140,9 @@ class BaseDownloader
 
                 try {
                     $result = $this->doProcess($html, $status, $options, $process_callback);
+                }
+                catch (Exceptions\RevisionDateNotFound $e) {
+                    throw $e;
                 }
                 catch (\Exception $e) {
                     continue;
