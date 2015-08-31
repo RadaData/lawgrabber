@@ -91,7 +91,6 @@ class Status extends Command
         $errors = number_format($errors);
         $discovered_count = number_format($discovered_count);
         $cards_downloaded = number_format($cards_downloaded);
-        $discovered_count = number_format($discovered_count);
         $revisions_downloaded = number_format($revisions_downloaded);
         $revisions_count = number_format($revisions_count);
         $cards_errors = number_format($cards_errors);
