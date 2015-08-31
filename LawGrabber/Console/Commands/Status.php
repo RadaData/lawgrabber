@@ -44,7 +44,7 @@ class Status extends Command
         $cards_downloaded = Law::where('status', Law::DOWNLOADED_CARD)->count();
         $cards_downloaded_p = floor(($cards_downloaded / ($cards_discovered ?: ($cards_downloaded ?: 1))) * 100);
         $cards_needs_update = Revision::where('status', '<', Law::DOWNLOADED_CARD)->count();
-        $cards_with_text = Law::where('has_text', Law::HAS_TEXT)->count();
+        $cards_with_text = Law::where('has_text', '<', Law::HAS_TEXT)->count();
         $cards_without_text = Law::where('has_text', Law::NO_TEXT)->count();
         $cards_errors = Law::where('status', Law::DOWNLOAD_ERROR)->count();
 
@@ -126,22 +126,27 @@ class Status extends Command
 === Discovered laws: {$cards_discovered}
     Most recent law: {$most_recent} ({$most_recent_age})
 
+
 === Downloaded:
 -------- Cards:
          - all: {$cards_discovered}
   - downloaded: {$cards_downloaded} ({$cards_downloaded_p}%)
  - need-update: {$cards_needs_update}
+      - errors: {$cards_errors}
+
     - with-text {$cards_with_text}
      - no-text: {$cards_without_text}
-      - errors: {$cards_errors}
+
 
 ---- Revisions:
          - all: {$revisions_count}
   - downloaded: {$revisions_downloaded} ({$revisions_downloaded_p}%)
  - need-update: {$revisions_needs_update}
+      - errors: {$revisions_errors}
+
    - with-text: {$revisions_with_text}
      - no-text: {$revisions_without_text}
-      - errors: {$revisions_errors}
+
 
 === Jobs: {$currently_running}
     Todo: {$jobs_count} {$jobs_completion_time}
