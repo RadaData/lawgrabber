@@ -62,7 +62,7 @@ class JobsManager
                 }
 
                 if (!$this->count($group, $service, $method)) {
-                    if ($wait_if_no_jobs) {
+                    if ($wait_if_no_jobs || count($this->currentJobs)) {
                         sleep(1000);
                         continue;
                     } else {
