@@ -89,7 +89,9 @@ class JobsManager
                 } // Worker.
                 else {
                     $job = $this->fetch($group, $service, $method);
-                    $job->execute();
+                    if ($job) {
+                        $job->execute();
+                    }
                     exit;
                 }
             }
