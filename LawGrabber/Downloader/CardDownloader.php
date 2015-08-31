@@ -114,7 +114,18 @@ class CardDownloader extends BaseDownloader
         }
 
         if (!$data['active_revision'] && $data['has_text']) {
-            throw new Exceptions\DocumentHasErrors("Card has text, but no revisions in '{$law_id}'");
+            $sub_options = $options;
+            $sub_url = '/laws/show/' . $law_id;
+            $sub_options['url'] = $sub_url;
+            $this->download($sub_url, $options, function($html, $status, $options) use ($data) {
+                $d = app()->make('lawgrabber.revision_downloader');
+                try {
+                    $data['active_revision'] = $d->getRevisionDate($html, '', '');
+                }
+                catch (\Exception $e) {
+                    throw new Exceptions\DocumentHasErrors("Card has text, but no revisions in '{$law_id}'");
+                }
+            });
         }
 
         if (isset($options['check_related']) && $options['check_related']) {
