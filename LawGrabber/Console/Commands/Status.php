@@ -95,7 +95,6 @@ class Status extends Command
         $revisions_count = number_format($revisions_count);
         $cards_errors = number_format($cards_errors);
         $revisions_errors = number_format($revisions_errors);
-        $currently_running = number_format($currently_running);
         $jobs_count = number_format($jobs_count);
         $jobs_discovery = number_format($jobs_discovery);
         $jobs_download_cards = number_format($jobs_download_cards);
