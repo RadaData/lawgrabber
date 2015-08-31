@@ -88,6 +88,22 @@ class Status extends Command
 
         DB::commit();
 
+        $errors = number_format($errors);
+        $discovered_count = number_format($discovered_count);
+        $cards_downloaded = number_format($cards_downloaded);
+        $discovered_count = number_format($discovered_count);
+        $revisions_downloaded = number_format($revisions_downloaded);
+        $revisions_count = number_format($revisions_count);
+        $cards_errors = number_format($cards_errors);
+        $revisions_errors = number_format($revisions_errors);
+        $currently_running = number_format($currently_running);
+        $jobs_count = number_format($jobs_count);
+        $jobs_discovery = number_format($jobs_discovery);
+        $jobs_download_cards = number_format($jobs_download_cards);
+        $jobs_download_revisions = number_format($jobs_download_revisions);
+        $jobs_last_10_minutes = number_format($jobs_last_10_minutes);
+        $jobs_last_hour = number_format($jobs_last_hour);
+        $jobs_last_day = number_format($jobs_last_day);
 
         $status = <<<STATUS
 === Errors in log: {$errors}
