@@ -96,7 +96,7 @@ class RevisionDownloader extends BaseDownloader
      * @return bool|string
      * @throws Exceptions\WrongDateException
      */
-    private function getRevisionDate($html, $default_date, $url)
+    public function getRevisionDate($html, $default_date, $url)
     {
         if (strpos($html, 'txt txt-old') !== false) {
             $revision_date = $default_date;
