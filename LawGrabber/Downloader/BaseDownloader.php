@@ -111,6 +111,7 @@ class BaseDownloader
             }
             catch (\Exception $e) {
                 unlink($file_path);
+                throw $e;
             }
         }
 
@@ -119,6 +120,7 @@ class BaseDownloader
 
             $result = [];
             $attempts = 0;
+            $status = 0;
             do {
                 // log failed stages when loop restarts
                 if ($result) {
