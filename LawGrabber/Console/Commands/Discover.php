@@ -125,7 +125,7 @@ class Discover extends Command
                 'law_list_url' => '/laws/main/a' . date('Ymd', $date) . '/sp5/page',
                 'date' => date('Y-m-d', $date),
                 're_download' => $re_download
-            ], 'discover');
+            ], 'discover', 5);
             $date = strtotime(date('c', $date) . '+1 day');
         }
     }
@@ -149,7 +149,7 @@ class Discover extends Command
                 'date' => $date,
                 'page_num' => $i,
                 're_download' => $re_download
-            ], 'discover');
+            ], 'discover', 10);
         }
     }
 
@@ -169,7 +169,7 @@ class Discover extends Command
         ]);
         foreach ($data['laws'] as $id => $law) {
             Law::firstOrCreate(['id' => $id])->update(['date' => $law['date']]);
-            $this->jobsManager->add('command.lawgrabber.discover', 'downloadCard', ['id' => $id], 'download', 1);
+            $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', ['id' => $id], 'download', 1);
         }
     }
 
