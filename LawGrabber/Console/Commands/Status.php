@@ -43,6 +43,7 @@ class Status extends Command
 
         $cards_downloaded = Law::where('status', Law::DOWNLOADED_CARD)->count();
         $cards_downloaded_p = floor(($cards_downloaded / ($cards_discovered ?: ($cards_downloaded ?: 1))) * 100);
+        $cards_needs_update = Revision::where('status', '<', Law::DOWNLOADED_CARD)->count();
         $cards_with_text = Law::where('has_text', Law::HAS_TEXT)->count();
         $cards_without_text = Law::where('has_text', Law::NO_TEXT)->count();
         $cards_errors = Law::where('status', Law::DOWNLOAD_ERROR)->count();
@@ -94,17 +95,23 @@ class Status extends Command
         DB::commit();
 
         $errors = number_format($errors);
+
         $cards_discovered = number_format($cards_discovered);
-        $cards_downloaded = number_format($cards_downloaded);
-        $cards_with_text = number_format($cards_with_text);
-        $cards_without_text = number_format($cards_without_text);
-        $cards_errors = number_format($cards_errors);
+        $l = strlen($cards_discovered);
+        $cards_downloaded = str_pad(number_format($cards_downloaded), $l);
+        $cards_needs_update = str_pad(number_format($cards_needs_update), $l);
+        $cards_with_text = str_pad(number_format($cards_with_text), $l);
+        $cards_without_text = str_pad(number_format($cards_without_text), $l);
+        $cards_errors = str_pad(number_format($cards_errors), $l);
+
         $revisions_count = number_format($revisions_count);
-        $revisions_with_text = number_format($revisions_with_text);
-        $revisions_without_text = number_format($revisions_without_text);
-        $revisions_downloaded = number_format($revisions_downloaded);
-        $revisions_needs_update = number_format($revisions_needs_update);
-        $revisions_errors = number_format($revisions_errors);
+        $l = strlen($revisions_count);
+        $revisions_with_text = str_pad(number_format($revisions_with_text), $l);
+        $revisions_without_text = str_pad(number_format($revisions_without_text), $l);
+        $revisions_downloaded = str_pad(number_format($revisions_downloaded), $l);
+        $revisions_needs_update = str_pad(number_format($revisions_needs_update), $l);
+        $revisions_errors = str_pad(number_format($revisions_errors), $l);
+
         $jobs_count = number_format($jobs_count);
         $jobs_discovery = number_format($jobs_discovery);
         $jobs_download_cards = number_format($jobs_download_cards);
@@ -123,16 +130,17 @@ class Status extends Command
 -------- Cards:
          - all: {$cards_discovered}
   - downloaded: {$cards_downloaded} ({$cards_downloaded_p}%)
+ - need-update: {$cards_needs_update}
     - with-text {$cards_with_text}
      - no-text: {$cards_without_text}
       - errors: {$cards_errors}
 
 ---- Revisions:
          - all: {$revisions_count}
+  - downloaded: {$revisions_downloaded} ({$revisions_downloaded_p}%)
+ - need-update: {$revisions_needs_update}
    - with-text: {$revisions_with_text}
      - no-text: {$revisions_without_text}
-  - up-to-date: {$revisions_downloaded} ({$revisions_downloaded_p}%)
- - need-update: {$revisions_needs_update}
       - errors: {$revisions_errors}
 
 === Jobs: {$currently_running}
