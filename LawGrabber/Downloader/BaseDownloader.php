@@ -21,7 +21,6 @@ class BaseDownloader
             'Документи потрібно відкривати по одному',
             'Сторiнку не знайдено',
             'Доступ тимчасово обмежено',
-            'Документ не знайдено!',
             'Цього списку вже немає в кеші.',
         ],
         '403'   => [
@@ -32,6 +31,7 @@ class BaseDownloader
         ],
         'error' => [
             '??.??.????',
+            'Документ не знайдено!',
         ],
     ];
 
@@ -72,7 +72,9 @@ class BaseDownloader
      * @throws Exceptions\DocumentHasErrors
      * @throws Exceptions\DocumentIsMissing
      * @throws Exceptions\ProxyBanned
+     * @throws Exceptions\RevisionDateNotFound
      * @throws Exceptions\UnknownProblem
+     * @throws \Exception
      */
     public function download($url, $options = [], callable $process_callback = null)
     {
@@ -139,7 +141,7 @@ class BaseDownloader
                 try {
                     $result = $this->doProcess($html, $status, $options, $process_callback);
                 }
-                catch (Exceptions\RevisionDateNotFound $e) {
+                catch (Exceptions\ContentError $e) {
                     throw $e;
                 }
                 catch (\Exception $e) {
