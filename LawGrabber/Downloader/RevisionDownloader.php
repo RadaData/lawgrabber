@@ -102,7 +102,7 @@ class RevisionDownloader extends BaseDownloader
             $revision_date = $default_date;
         } else {
             try {
-                $raw_date = crawler($html)->filterXPath('//div[@id="pan_title"]/*/font[@color="#004499" or @color="#666666" or @color="navy"]/b')->text();
+                $raw_date = crawler($html)->filterXPath('//div[@id="pan_title"]/*/font[@color="#004499" or @color="#666666" or @color="navy" or @color="#CC0000"]/b')->text();
                 $revision_date = $this->parseDate($raw_date);
             } catch (\Exception $e) {
                 throw new Exceptions\WrongDateException("Revision date has not been found in text of $url");
