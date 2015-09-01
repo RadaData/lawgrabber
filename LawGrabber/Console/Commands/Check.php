@@ -44,7 +44,7 @@ class Check extends Command
             return $this->move_files();
         }
 
-        $downloaded_card = Law::where('status', Law::DOWNLOADED_CARD)->count();
+        $downloaded_card = Law::where('status', Law::UP_TO_DATE)->count();
         $downloaded_text = Law::where('status', Law::DOWNLOADED_REVISIONS)->count();
         $downloaded_relations = Law::where('status', Law::DOWNLOADED_RELATIONS)->count();
         $without_text = Law::where('status', '>', Law::NOT_DOWNLOADED)->where('has_text', Law::NO_TEXT)->count();
@@ -130,7 +130,7 @@ class Check extends Command
                     if (strpos($html, 'Текст відсутній') !== false) {
                         $d_unknown_text_no_text++;
                         if ($fix) {
-                            $law->update(['status' => Law::DOWNLOADED_CARD, 'has_text' => Law::NO_TEXT]);
+                            $law->update(['status' => Law::UP_TO_DATE, 'has_text' => Law::NO_TEXT]);
                         }
                     } else {
                         $d_no_files++;

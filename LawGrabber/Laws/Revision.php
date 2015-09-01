@@ -29,8 +29,8 @@ use Illuminate\Database\Query\Builder;
 class Revision extends Model
 {
     const NEEDS_UPDATE = 0;
-    const UP_TO_DATE = 1;
-    const NO_TEXT = 5;
+    const UP_TO_DATE = 5;
+    const NO_TEXT = 10;
     const DOWNLOAD_ERROR = 100;
 
     protected $table = 'law_revisions';

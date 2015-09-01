@@ -74,7 +74,7 @@ class Download extends Command
     {
         $this->jobsManager->deleteAll('download');
 
-        Law::where('date', '<', max_date())->where('status', 'IN', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->chunk(200, function ($laws) {
+        Law::where('date', '<', max_date())->whereIn('status', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->chunk(200, function ($laws) {
             foreach ($laws as $law) {
                 $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                     'id'          => $law->id,
@@ -88,7 +88,7 @@ class Download extends Command
             foreach ($laws as $law) {
                 $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                     'id'          => $law->id,
-                    're_download' => $law->status == Law::DOWNLOADED_BUT_NEEDS_UPDATE
+                    're_download' => true
                 ], 'download', 1);
             }
         });
@@ -186,7 +186,7 @@ class Download extends Command
 
             $law->card_updated = $card['timestamp'];
 
-            $law->status = $has_unknown_revision ? Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION : Law::DOWNLOADED_CARD;
+            $law->status = $has_unknown_revision ? Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION : Law::UP_TO_DATE;
 
             $law->save();
         });

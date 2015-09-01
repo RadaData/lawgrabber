@@ -41,9 +41,9 @@ class Status extends Command
         $most_recent_diff = floor((time() - (strtotime($most_recent)))/3600/24);
         $most_recent_age = $most_recent_diff ? $most_recent_diff . ' days ago' : 'up to date';
 
-        $cards_downloaded = Law::where('status', Law::DOWNLOADED_CARD)->count();
+        $cards_downloaded = Law::where('status', Law::UP_TO_DATE)->count();
         $cards_downloaded_p = floor(($cards_downloaded / ($cards_discovered ?: ($cards_downloaded ?: 1))) * 100);
-        $cards_needs_update = Law::where('status', '<', Law::DOWNLOADED_CARD)->count();
+        $cards_needs_update = Law::where('status', '<', Law::UP_TO_DATE)->count();
         $cards_with_text = Law::where('has_text', '<=', Law::HAS_TEXT)->count();
         $cards_without_text = Law::where('has_text', Law::NO_TEXT)->count();
         $cards_errors = Law::where('status', Law::DOWNLOAD_ERROR)->count();
