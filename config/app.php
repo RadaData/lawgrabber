@@ -156,6 +156,8 @@ return [
         LawGrabber\Laws\LawsServiceProvider::class,
         LawGrabber\Console\ConsoleServiceProvider::class,
 
+        LawHistory\Console\ConsoleServiceProvider::class,
+
     ],
 
     /*
