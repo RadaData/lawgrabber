@@ -230,10 +230,6 @@ class JobsManager
      */
     public function count($group = null, $service = null, $method = null)
     {
-        if ($group == 'all') {
-            return Job::count();
-        }
-
         $query = Job::where('claimed', 0)->where('finished', 0);
         if ($group) {
             $query->where('group', $group);

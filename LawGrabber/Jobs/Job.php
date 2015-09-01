@@ -62,6 +62,7 @@ class Job extends Model
             else {
                 _log('JOB#' . $this->id . ' ERROR(' . str_replace('LawGrabber\Service\Exceptions\\', '', get_class($e)) . ': ' . $e->getMessage() . ')', 'red');
             }
+            $this->update(['claimed' => 0]);
         }
     }
 
@@ -85,7 +86,7 @@ class Job extends Model
             call_user_func_array($func, $this->parameters);
         }
 
-        $this->update(['finished' => self::ERROR, 'claimed' => 0]);
+        $this->update(['finished' => Job::ERROR, 'claimed' => 0]);
     }
 }
 
