@@ -104,7 +104,7 @@ class Start extends Command
             return;
         }
 
-        if (!$this->jobsManager->count()) {
+        if (!$this->jobsManager->count('all')) {
             _log('No jobs found. Initializing a new discovery and download jobs.');
             $this->discoverer->discoverNewLaws();
             $this->downloader->downloadNewLaws();
