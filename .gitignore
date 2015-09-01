@@ -1,8 +1,12 @@
+/vendor
+/node_modules
+Homestead.yaml
+Homestead.json
+.env
+
 .idea
 .DS_Store
-/vendor
-bin/
-.env
+/bin
 .env_proxies
 grab.sh
 send.sh

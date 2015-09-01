@@ -1,6 +1,6 @@
 <?php
 
-namespace LawGrabber\History;
+namespace LawHistory\History;
 
 class RevisionViewComposer
 {
