@@ -38,10 +38,9 @@ class Law extends Model
     const NO_TEXT = 10;
 
     const NOT_DOWNLOADED = 0;
+    const DOWNLOADED_BUT_HAS_UNKNOWN_REVISION = 3;
     const DOWNLOADED_BUT_NEEDS_UPDATE = 4;
     const DOWNLOADED_CARD = 5;
-    const DOWNLOADED_REVISIONS = 10;
-    const DOWNLOADED_RELATIONS = 15;
     const DOWNLOAD_ERROR = 100;
 
     public $incrementing = false;

@@ -74,7 +74,11 @@ class Download extends Command
     {
         $this->jobsManager->deleteAll('download');
 
-        Law::where('status', '<', Law::DOWNLOADED_CARD)->where('date', '<', max_date())->chunk(200, function ($laws) {
+        Law::where('date', '<', max_date())->where(function($query){
+            $query->where('status', 'IN', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->orWhere(function($query){
+                $query->where('status', Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION)->where('card_updated', '<', time() + 3600 * 24);
+            });
+        })->chunk(200, function ($laws) {
             foreach ($laws as $law) {
                 $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                     'id'          => $law->id,
@@ -132,7 +136,12 @@ class Download extends Command
 
             $law->has_text = $card['has_text'] ? $law->has_text = Law::HAS_TEXT : $law->has_text = Law::NO_TEXT;
 
+            $has_unknown_revision = false;
             foreach ($card['revisions'] as &$revision) {
+                if ($revision['date'] == '??.??.????') {
+                    $has_unknown_revision = true;
+                    continue;
+                }
                 $data = [
                     'law_id'  => $revision['law_id'],
                     'date'    => $revision['date'],
@@ -159,7 +168,7 @@ class Download extends Command
             }
 
             if (isset($card['changes_laws']) && $card['changes_laws']) {
-                Law::where('id', array_column($card['changes_laws'], 'id'))->update(['status' => Law::DOWNLOADED_BUT_NEEDS_UPDATE]);
+                Law::where('id', array_column($card['changes_laws'], 'id'))->update(['status' => Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION]);
                 foreach ($card['changes_laws'] as $l) {
                     $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                         'id'          => $l['id'],
@@ -170,7 +179,7 @@ class Download extends Command
 
             $law->card_updated = $card['timestamp'];
 
-            $law->status = Law::DOWNLOADED_CARD;
+            $law->status = $has_unknown_revision ? Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION : Law::DOWNLOADED_CARD;
 
             $law->save();
         });

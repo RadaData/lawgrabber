@@ -30,7 +30,6 @@ class BaseDownloader
             'Ви потрапили до забороненого ресурсу',
         ],
         'error' => [
-            '??.??.????',
             'Документ не знайдено!',
         ],
     ];
@@ -458,14 +457,6 @@ class BaseDownloader
         if (strpos($html, '</body>') === false && ($type != '403' && $type != '404')) {
             return '{document is not fully downloaded}';
         }
-        //if (($type == 'error' || $type == 'all') &&
-        //    (strpos($html, 'class=txt') === false &&
-        //        strpos($html, 'class="txt') === false &&
-        //        strpos($html, 'hdr2') === false &&
-        //        strpos($html, 'valid txt') === false
-        //    )) {
-        //    return true;
-        //}
         if ($type == 'all') {
             $words = array_merge($this->stop_words['404'], $this->stop_words['403']);
         } else {
@@ -502,11 +493,15 @@ class BaseDownloader
         return false;
     }
 
-    protected function parseDate($radaDate, $error_text = null)
+    protected function parseDate($raw_date, $error_text = null)
     {
-        $raw_date = preg_replace('|([0-9]{2}\.[0-9]{2}\.[0-9]{4}).*|', '$1', $radaDate);
+        if ($raw_date == '??.??.????') {
+            return $raw_date;
+        }
+
+        $raw_date = preg_replace('|([0-9]{2}\.[0-9]{2}\.[0-9]{4}).*|', '$1', $raw_date);
         if (!preg_match('|[0-9]{2}\.[0-9]{2}\.[0-9]{4}|', $raw_date)) {
-            $error_text = $error_text ?: "Date {$radaDate} is not valid date.";
+            $error_text = $error_text ?: "Date {$raw_date} is not valid date.";
             throw new Exceptions\WrongDateException($error_text);
         }
         $date = date_format(date_create_from_format('d.m.Y', $raw_date), 'Y-m-d');
