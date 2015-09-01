@@ -74,11 +74,7 @@ class Download extends Command
     {
         $this->jobsManager->deleteAll('download');
 
-        Law::where('date', '<', max_date())->where(function($query){
-            $query->where('status', 'IN', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->orWhere(function($query){
-                $query->where('status', Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION)->where('card_updated', '<', time() + 3600 * 24);
-            });
-        })->chunk(200, function ($laws) {
+        Law::where('date', '<', max_date())->where('status', 'IN', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->chunk(200, function ($laws) {
             foreach ($laws as $law) {
                 $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                     'id'          => $law->id,
@@ -86,6 +82,17 @@ class Download extends Command
                 ], 'download', 1);
             }
         });
+
+        // Cards with ??.??.???? should be rescanned only once in a while.
+        Law::where('date', '<', max_date())->where('status', Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION)->where('card_updated', '<', time() + 3600 * 24)->chunk(200, function ($laws) {
+            foreach ($laws as $law) {
+                $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
+                    'id'          => $law->id,
+                    're_download' => $law->status == Law::DOWNLOADED_BUT_NEEDS_UPDATE
+                ], 'download', 1);
+            }
+        });
+
         Revision::where('status', Revision::NEEDS_UPDATE)->chunk(200, function ($revisions) {
             foreach ($revisions as $revision) {
                 $this->jobsManager->add('command.lawgrabber.download', 'downloadRevision', [
