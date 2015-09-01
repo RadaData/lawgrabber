@@ -3,6 +3,8 @@
 namespace LawGrabber\Console;
 
 use Illuminate\Support\ServiceProvider;
+use Route;
+use Cache;
 
 class ConsoleServiceProvider extends ServiceProvider
 {
@@ -46,6 +48,26 @@ class ConsoleServiceProvider extends ServiceProvider
             'command.lawgrabber.start',
             'command.lawgrabber.status',
         ]);
+
+    }
+
+    /**
+     * Perform post-registration booting of services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Route::get('/status', function () {
+            $output = Cache::get('status');
+
+            if (!$output) {
+                $output = app()->make('command.lawgrabber.status')->handle(true);
+                Cache::put('status', $output, 1);
+            }
+
+            return "<pre>$output</pre>";
+        });
     }
 
 }
