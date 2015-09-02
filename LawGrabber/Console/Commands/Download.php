@@ -154,16 +154,16 @@ class Download extends Command
                     'date'    => $revision['date'],
                     'comment' => $revision['comment']
                 ];
-                // We should be careful with statuses, since we don't want to re-download already downloaded revisions.
                 if ($law->notHasText() || (isset($revision['no_text']) && $revision['no_text'])) {
                     $data['status'] = Revision::NO_TEXT;
-                }
-                if (isset($revision['needs_update']) && $revision['needs_update']) {
-                    $data['status'] = Revision::NEEDS_UPDATE;
                 }
                 $r = Revision::findROrNew($data['law_id'], $data['date']);
                 $r->save();
                 $r->update($data);
+            }
+            // We should update revision which has just come into power.
+            if ($law->active_revision && $law->active_revision != $card['active_revision']) {
+                Revision::find($data['law_id'], $card['active_revision'])->update(['status' => Revision::NEEDS_UPDATE]);
             }
             $law->active_revision = $card['active_revision'];
 

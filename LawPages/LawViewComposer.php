@@ -6,9 +6,9 @@ use Illuminate\View\View;
 use LawGrabber\Laws\Exceptions\LawHasNoTextAtRevision;
 use LawGrabber\Laws\Law;
 use LawGrabber\Laws\Revision;
-use League\HTMLToMarkdown\HtmlConverter;
+use LawPages\Renderer\RenderManager;
 
-class LawRenderer
+class LawViewComposer
 {
 
     /**
@@ -24,38 +24,8 @@ class LawRenderer
             $revision = $law->active_revision()->first();
         }
 
-        $view->with('text', $this->getText($law, $revision));
-    }
-
-    /**
-     * @param Law      $law
-     * @param Revision $revision
-     *
-     * @return string
-     * @throws LawHasNoTextAtRevision
-     */
-    public function getText(Law $law, Revision $revision)
-    {
-        $meta = $this->getLawMeta($revision);
-        $text = $this->toMD($this->getLawText($revision));
-
-        return $meta . $text;
-    }
-
-    /**
-     * @param Revision $revision
-     *
-     * @return string
-     */
-    private function getLawMeta(Revision $revision) {
-        $data = $this->getLawMetaData($revision);
-
-        $meta = "---\n";
-        foreach ($data as $key => $value) {
-            $meta .= $key . ': ' . $value . "\n";
-        }
-        $meta .= "---\n\n";
-        return $meta;
+        $view->with('meta', $this->getLawMetaData($revision));
+        $view->with('text', $this->getLawText($revision));
     }
 
     /**
@@ -96,7 +66,20 @@ class LawRenderer
      * @return string
      * @throws LawHasNoTextAtRevision
      */
-    private function getLawText(Revision $revision) {
+    private function getLawText(Revision $revision)
+    {
+        $text = $this->getRevisionText($revision);
+        $render_manager = new RenderManager($text);
+        return $render_manager->render();
+    }
+
+    /**
+     * @param Revision $revision
+     *
+     * @return string
+     * @throws LawHasNoTextAtRevision
+     */
+    private function getRevisionText(Revision $revision) {
         $law = $revision->getLaw();
         if ($law->notHasText()) {
             return '';
@@ -112,12 +95,6 @@ class LawRenderer
         }
 
         return $last_revision_with_text->text;
-    }
-
-    private function toMD($text)
-    {
-        $converter = new HtmlConverter();
-        return $converter->convert($text);
     }
 
 }

@@ -65,7 +65,7 @@ class Law extends Model
     }
     public function active_revision()
     {
-        return $this->hasOne('\LawGrabber\Laws\Revision', 'date', 'active_revision');
+        return Revision::where(['law_id' => $this->id, 'date' => $this->active_revision]);
     }
 
     /**

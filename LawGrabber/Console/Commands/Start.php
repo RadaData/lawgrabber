@@ -73,6 +73,11 @@ class Start extends Command
      */
     public function handle()
     {
+        $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
+            'id'          => '742-18',
+        ], 'download', 1);
+
+
         if ($this->option('single')) {
             $output = [];
             exec('pgrep -l -f "^php (.*?)artisan start"', $output);

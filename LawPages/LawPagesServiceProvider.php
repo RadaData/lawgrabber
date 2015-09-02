@@ -4,6 +4,7 @@ namespace LawPages;
 
 use Illuminate\Routing\Router;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
+use LawPages\Renderer\RenderManager;
 
 class LawPagesServiceProvider extends RouteServiceProvider
 {
@@ -14,9 +15,6 @@ class LawPagesServiceProvider extends RouteServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('LawRenderer', function ($app) {
-            return new LawRenderer();
-        });
     }
 
     /**
@@ -30,7 +28,7 @@ class LawPagesServiceProvider extends RouteServiceProvider
         parent::boot($router);
 
         $this->loadViewsFrom(__DIR__ . '/views', 'lawpages');
-        $this->app['view']->composer('lawpages::law', 'LawPages\LawRenderer');
+        $this->app['view']->composer('lawpages::law', 'LawPages\LawViewComposer');
     }
 
     /**

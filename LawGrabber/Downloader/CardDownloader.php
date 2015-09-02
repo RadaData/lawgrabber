@@ -16,8 +16,7 @@ class CardDownloader extends BaseDownloader
      *   'meta' => array,
      *   'has_text' => bool,
      *   'revisions' => array[
-     *     ['law_id' => string, 'date' => string, 'comment' => string, 'no_text' => null|bool, 'needs_update' =>
-     *     null|bool],
+     *     ['law_id' => string, 'date' => string, 'comment' => string, 'no_text' => null|bool,
      *     ...
      *   ],
      *   'active_revision' => string,
@@ -100,7 +99,6 @@ class CardDownloader extends BaseDownloader
                 $comment = $node->html();
                 if (strpos($comment, '<a name="Current"></a>') !== false) {
                     $data['active_revision'] = $data['revisions'][$last_revision]['date'];
-                    $data['revisions'][$last_revision]['needs_update'] = true;
                 }
 
                 $comment = str_replace('<a name="Current"></a>', '', $comment);
