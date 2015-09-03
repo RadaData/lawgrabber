@@ -74,7 +74,7 @@ class Download extends Command
     {
         $this->jobsManager->deleteAll('download');
 
-        $laws = DB::table('laws')->where('date', '<', max_date())->whereIn('status', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->select('law_id', 'status')->get();
+        $laws = DB::table('laws')->where('date', '<', max_date())->whereIn('status', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->select('id', 'status')->get();
         foreach ($laws as $law) {
             $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                 'id'          => $law->id,
@@ -83,7 +83,7 @@ class Download extends Command
         }
 
         // Cards with ??.??.???? should be rescanned only once in a while.
-        $laws = DB::table('laws')->where('date', '<', max_date())->where('status', Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION)->where('card_updated', '<', time() + 3600 * 24)->select('law_id')->get();
+        $laws = DB::table('laws')->where('date', '<', max_date())->where('status', Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION)->where('card_updated', '<', time() + 3600 * 24)->select('id')->get();
         foreach ($laws as $law) {
             $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                 'id'          => $law->id,
