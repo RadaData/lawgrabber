@@ -74,33 +74,30 @@ class Download extends Command
     {
         $this->jobsManager->deleteAll('download');
 
-        Law::where('date', '<', max_date())->whereIn('status', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->chunk(200, function ($laws) {
-            foreach ($laws as $law) {
-                $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
-                    'id'          => $law->id,
-                    're_download' => $law->status == Law::DOWNLOADED_BUT_NEEDS_UPDATE
-                ], 'download', 1);
-            }
-        });
+        $laws = DB::table('laws')->where('date', '<', max_date())->whereIn('status', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->select('law_id', 'status')->get();
+        foreach ($laws as $law) {
+            $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
+                'id'          => $law->id,
+                're_download' => $law->status == Law::DOWNLOADED_BUT_NEEDS_UPDATE
+            ], 'download', 1);
+        }
 
         // Cards with ??.??.???? should be rescanned only once in a while.
-        Law::where('date', '<', max_date())->where('status', Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION)->where('card_updated', '<', time() + 3600 * 24)->chunk(200, function ($laws) {
-            foreach ($laws as $law) {
-                $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
-                    'id'          => $law->id,
-                    're_download' => true
-                ], 'download', 1);
-            }
-        });
+        $laws = DB::table('laws')->where('date', '<', max_date())->where('status', Law::DOWNLOADED_BUT_HAS_UNKNOWN_REVISION)->where('card_updated', '<', time() + 3600 * 24)->select('law_id')->get();
+        foreach ($laws as $law) {
+            $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
+                'id'          => $law->id,
+                're_download' => true
+            ], 'download', 1);
+        }
 
-        Revision::where('status', Revision::NEEDS_UPDATE)->chunk(200, function ($revisions) {
-            foreach ($revisions as $revision) {
-                $this->jobsManager->add('command.lawgrabber.download', 'downloadRevision', [
-                    'law_id' => $revision->law_id,
-                    'date'   => $revision->date,
-                ], 'download');
-            }
-        });
+        $revisions = DB::table('law_revisions')->where('status', Revision::NEEDS_UPDATE)->select('law_id', 'date')->get();
+        foreach ($revisions as $revision) {
+            $this->jobsManager->add('command.lawgrabber.download', 'downloadRevision', [
+                'law_id' => $revision->law_id,
+                'date'   => $revision->date,
+            ], 'download');
+        }
     }
 
     /**
