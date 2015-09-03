@@ -183,23 +183,13 @@ class JobsManager
      */
     public function add($service, $method, $parameters, $group, $priority = 0)
     {
-        $job = Job::where([
+        Job::create([
             'service'    => $service,
             'method'     => $method,
-            'parameters' => json_encode($parameters),
+            'parameters' => $parameters,
             'group'      => $group,
             'priority'   => $priority,
-        ])->first();
-
-        if (!$job) {
-            Job::create([
-                'service'    => $service,
-                'method'     => $method,
-                'parameters' => $parameters,
-                'group'      => $group,
-                'priority'   => $priority,
-            ]);
-        }
+        ]);
     }
 
     /**
