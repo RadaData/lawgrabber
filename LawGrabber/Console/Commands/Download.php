@@ -22,6 +22,9 @@ class Download extends Command
      * @var string
      */
     protected $signature = 'download
+                            {law? : The law ID.}
+                            {revision? : The revision date.}
+                            {--l|law : Reset the download jobs pool and fill it with download jobs for NOT DOWNLOADED laws.}
                             {--r|reset : Reset the download jobs pool and fill it with download jobs for NOT DOWNLOADED laws.}
                             {--d|re-download : Re-download any page from the live website.}';
 
@@ -56,8 +59,20 @@ class Download extends Command
      */
     public function handle()
     {
+        $law_id = $this->argument('law');
+        $revision_date = $this->argument('revision');
+
         $this->reset = $this->option('reset');
         $this->re_download = $this->option('re-download');
+
+        if ($law_id) {
+            if ($revision_date) {
+                $this->downloadRevision($law_id, $revision_date, $this->re_download);
+            }
+            else {
+                $this->downloadCard($law_id, $this->re_download);
+            }
+        }
 
         if ($this->reset) {
             $this->downloadNewLaws();
