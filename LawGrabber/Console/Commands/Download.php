@@ -76,11 +76,12 @@ class Download extends Command
                 }
             }
         }
-
-        if ($this->reset) {
-            $this->downloadNewLaws();
+        else {
+            if ($this->reset) {
+                $this->downloadNewLaws();
+            }
+            $this->jobsManager->launch(50, 'download');
         }
-        $this->jobsManager->launch(50, 'download');
 
         return true;
     }
