@@ -66,11 +66,14 @@ class Download extends Command
         $this->re_download = $this->option('re-download');
 
         if ($law_id) {
-            if ($revision_date) {
+            if ($revision_date && $revision_date != '@') {
                 $this->downloadRevision($law_id, $revision_date, $this->re_download);
             }
             else {
                 $this->downloadCard($law_id, $this->re_download);
+                if ($revision_date == '@') {
+                    $this->downloadRevision($law_id, null, $this->re_download);
+                }
             }
         }
 
@@ -228,9 +231,14 @@ class Download extends Command
      * @throws JobChangePriorityException
      * @throws Exceptions\ProxyBanned
      */
-    public function downloadRevision($law_id, $date, $re_download = false)
+    public function downloadRevision($law_id, $date = null, $re_download = false)
     {
         $law = Law::find($law_id);
+
+        if (!$date) {
+            $date = $law->active_revision;
+        }
+
         $revision = $law->getRevision($date);
 
         if ($revision->text && !$re_download) {
