@@ -120,7 +120,7 @@ class Download extends Command
         try {
             $card = downloadCard($id, [
                 're_download'   => $re_download || $this->re_download,
-                'check_related' => $law->status == Law::NOT_DOWNLOADED && !max_date()
+                'check_related' => $law->status == Law::NOT_DOWNLOADED && !max_date(),
             ]);
         } catch (Exceptions\ProxyBanned $e) {
             throw $e;
@@ -149,7 +149,7 @@ class Download extends Command
                 $data = [
                     'law_id'  => $revision['law_id'],
                     'date'    => $revision['date'],
-                    'comment' => $revision['comment']
+                    'comment' => $revision['comment'],
                 ];
                 if ($law->notHasText() || (isset($revision['no_text']) && $revision['no_text'])) {
                     $data['status'] = Revision::NO_TEXT;
@@ -176,7 +176,7 @@ class Download extends Command
                 foreach ($card['changes_laws'] as $l) {
                     $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                         'id'          => $l['id'],
-                        're_download' => true
+                        're_download' => true,
                     ], 'download', 2);
                 }
             }
@@ -197,7 +197,8 @@ class Download extends Command
      * @param            $id
      * @param bool|false $re_download
      */
-    public function downloadCardFail($id, $re_download = false) {
+    public function downloadCardFail($id, $re_download = false)
+    {
         Law::find($id)->update(['status' => Law::DOWNLOAD_ERROR]);
     }
 
@@ -217,7 +218,19 @@ class Download extends Command
         $law = Law::find($law_id);
         $revision = $law->getRevision($date);
 
+        if ($revision->text && !$re_download) {
+            $revision->update([
+                'status' => Revision::UP_TO_DATE,
+            ]);
+
+            return $revision;
+        }
+
         if ($law->notHasText()) {
+            $revision->update([
+                'status' => Revision::NO_TEXT,
+            ]);
+
             return $revision;
         }
 
@@ -232,23 +245,26 @@ class Download extends Command
                 $this->downloadCard($law->id, true);
                 $data = downloadRevision($revision->law_id, $revision->date, ['re_download' => $re_download]);
             }
-        }
-        catch (Exceptions\ProxyBanned $e) {
+        } catch (Exceptions\ProxyBanned $e) {
             throw $e;
-        }
-        catch (\Exception $e) {
+        } catch (Exceptions\RevisionDateNotFound $e) {
+            // If no revision date was found second time, this means that the revision actually does not have a text change.
+            $revision->update([
+                'status' => Revision::NO_TEXT,
+            ]);
+
+            return $revision;
+        } catch (\Exception $e) {
             $message = str_replace('ShvetsGroup\Service\Exceptions\\', '', get_class($e)) .
                 ($e->getMessage() ? ': ' . $e->getMessage() : '');
             throw new JobChangePriorityException($message, -15);
         }
 
-        DB::transaction(function () use ($law, $revision, $data) {
-            $revision->update([
-                'text'         => $data['text'],
-                'text_updated' => $data['timestamp'],
-                'status'       => Revision::UP_TO_DATE
-            ]);
-        });
+        $revision->update([
+            'text'         => $data['text'],
+            'text_updated' => $data['timestamp'],
+            'status'       => Revision::UP_TO_DATE,
+        ]);
 
         return $revision;
     }
@@ -260,7 +276,8 @@ class Download extends Command
      * @param            $date
      * @param bool|false $re_download
      */
-    public function downloadRevisionFail($law_id, $date, $re_download = false) {
+    public function downloadRevisionFail($law_id, $date, $re_download = false)
+    {
         $law = Law::find($law_id);
         $revision = $law->getRevision($date);
         $revision->update(['status' => Revision::DOWNLOAD_ERROR]);
