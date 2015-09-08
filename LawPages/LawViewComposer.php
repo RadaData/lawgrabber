@@ -24,8 +24,10 @@ class LawViewComposer
             $revision = $law->active_revision()->first();
         }
 
+        $is_raw = $view->offsetExists('raw') && $view->offsetGet('raw');
+
         $view->with('meta', $this->getLawMetaData($revision));
-        $view->with('text', $this->getLawText($revision));
+        $view->with('text', $this->getLawText($revision, $is_raw));
     }
 
     /**
@@ -43,6 +45,8 @@ class LawViewComposer
             //'Набрав чинність' => $law->getEnforceDate(),
             'Останні зміни' => $this->formatRevisionTitle($law->getActiveRevision()),
         ];
+
+        // TODO: law type, law issuer.
 
         return $data;
     }
@@ -66,9 +70,14 @@ class LawViewComposer
      * @return string
      * @throws LawHasNoTextAtRevision
      */
-    private function getLawText(Revision $revision)
+    private function getLawText(Revision $revision, $is_raw = false)
     {
         $text = $this->getRevisionText($revision);
+
+        if ($is_raw) {
+            return $text;
+        }
+
         $render_manager = new RenderManager($text);
         return $render_manager->render();
     }
