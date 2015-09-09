@@ -47,9 +47,12 @@ class JobsManager
         _log('Launching ' . $this->realWorkersCount($workers_count) . ' workers for "' . ($group ? ($group . '/') : '') . ($service ? $service . '->' : '') . $method . '" operations.', 'title');
 
         if ($this->realWorkersCount($workers_count) == 1) {
-            while ($job = $this->fetch($group, $service, $method)) {
-                $job->execute();
+            while ($jobs = $this->fetch($group, $service, $method)) {
+                foreach ($jobs as $job) {
+                    $job->execute();
+                }
             }
+            exit;
         } else {
             while (true) {
                 if (!$this->realWorkersCount($workers_count)) {
@@ -88,9 +91,10 @@ class JobsManager
                     }
                 } // Worker.
                 else {
-                    $job = $this->fetch($group, $service, $method);
-                    if ($job) {
-                        $job->execute();
+                    while ($jobs = $this->fetch($group, $service, $method)) {
+                        foreach ($jobs as $job) {
+                            $job->execute();
+                        }
                     }
                     exit;
                 }
@@ -147,10 +151,10 @@ class JobsManager
      */
     public function fetch($group = null, $service = null, $method = null)
     {
-        $job = null;
+        $jobs = [];
 
         DB::transaction(function () use ($group, $service, $method, &$job) {
-            $query = Job::where('claimed', 0)->where('finished', 0)->orderBy('priority', 'DESC')->orderBy('id')->lockForUpdate();
+            $query = Job::where('claimed', 0)->where('finished', 0)->orderBy('priority', 'DESC')->lockForUpdate();
             if ($group) {
                 $query->where('group', $group);
             }
@@ -160,13 +164,13 @@ class JobsManager
             if ($method) {
                 $query->where('method', $method);
             }
-            $job = $query->first();
-            if ($job) {
-                $job->update(['claimed' => time()]);
+            $jobs = $query->take(10)->get();
+            if ($jobs) {
+                $jobs->update(['claimed' => time()]);
             }
         });
 
-        return $job;
+        return $jobs ?: [];
     }
 
     /**
