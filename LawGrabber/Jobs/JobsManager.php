@@ -47,12 +47,9 @@ class JobsManager
         _log('Launching ' . $this->realWorkersCount($workers_count) . ' workers for "' . ($group ? ($group . '/') : '') . ($service ? $service . '->' : '') . $method . '" operations.', 'title');
 
         if ($this->realWorkersCount($workers_count) == 1) {
-            while ($jobs = $this->fetch($group, $service, $method)) {
-                foreach ($jobs as $job) {
-                    $job->execute();
-                }
+            while ($job = $this->fetch($group, $service, $method)) {
+                $job->execute();
             }
-            exit;
         } else {
             while (true) {
                 if (!$this->realWorkersCount($workers_count)) {
@@ -91,10 +88,9 @@ class JobsManager
                     }
                 } // Worker.
                 else {
-                    while ($jobs = $this->fetch($group, $service, $method)) {
-                        foreach ($jobs as $job) {
-                            $job->execute();
-                        }
+                    $job = $this->fetch($group, $service, $method);
+                    if ($job) {
+                        $job->execute();
                     }
                     exit;
                 }
@@ -151,7 +147,7 @@ class JobsManager
      */
     public function fetch($group = null, $service = null, $method = null)
     {
-        $jobs = [];
+        $job = null;
 
         DB::transaction(function () use ($group, $service, $method, &$job) {
             $query = Job::where('claimed', 0)->where('finished', 0)->orderBy('priority', 'DESC')->lockForUpdate();
@@ -164,13 +160,13 @@ class JobsManager
             if ($method) {
                 $query->where('method', $method);
             }
-            $jobs = $query->take(10)->get();
-            foreach ($jobs as $job) {
+            $job = $query->first();
+            if ($job) {
                 $job->update(['claimed' => time()]);
             }
         });
 
-        return $jobs ?: [];
+        return $job;
     }
 
     /**
