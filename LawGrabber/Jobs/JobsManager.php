@@ -165,8 +165,8 @@ class JobsManager
                 $query->where('method', $method);
             }
             $jobs = $query->take(10)->get();
-            if ($jobs) {
-                $jobs->update(['claimed' => time()]);
+            foreach ($jobs as $job) {
+                $job->update(['claimed' => time()]);
             }
         });
 
