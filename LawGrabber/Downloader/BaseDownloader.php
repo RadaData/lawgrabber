@@ -185,7 +185,6 @@ class BaseDownloader
         $request->addHeader('User-Agent', $this->identity->getUserAgent());
         $response = $client->getMessageFactory()->createResponse();
 
-        $start = time();
         $client->send($request, $response);
         $status = $response->getStatus();
         $html = $response->getContent();

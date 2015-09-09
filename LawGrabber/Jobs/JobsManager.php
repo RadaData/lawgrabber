@@ -100,7 +100,7 @@ class JobsManager
 
     public function realWorkersCount($workers_count)
     {
-        return min($workers_count, $this->proxyManager->count());
+        return env('OFFLINE_PRIORITY', false) ? $workers_count : min($workers_count, $this->proxyManager->count());
     }
 
     public function childSignalHandler($signo, $pid = null, $status = null)
