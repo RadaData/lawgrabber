@@ -190,7 +190,7 @@ class BaseDownloader
         $status = $response->getStatus();
         $html = $response->getContent();
 
-        sleep(max(10, min(0, time() - $start)));
+        sleep(max(10, min(0, ($this->proxyManager->getProxyLastUsageTime()->last_used + 10000) - time())));
 
         return [
             'status' => $status,

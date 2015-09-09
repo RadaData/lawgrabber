@@ -57,13 +57,13 @@ class JobsManager
                     die();
                 }
                 if (count($this->currentJobs) >= $this->realWorkersCount($workers_count)) {
-                    sleep(1000);
+                    sleep(100);
                     continue;
                 }
 
                 if (!$this->count($group, $service, $method)) {
                     if ($wait_if_no_jobs || count($this->currentJobs)) {
-                        sleep(1000);
+                        sleep(100);
                         continue;
                     } else {
                         return;

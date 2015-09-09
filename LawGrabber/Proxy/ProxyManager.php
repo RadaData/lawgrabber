@@ -129,6 +129,15 @@ class ProxyManager
     }
 
     /**
+     * Get proxy last usage time.
+     * @return int
+     */
+    public function getProxyLastUsageTime()
+    {
+        return floor($this->getProxy()->last_used / 100);
+    }
+
+    /**
      * Select least used proxy from the pool.
      *
      * @return string
