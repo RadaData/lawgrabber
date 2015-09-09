@@ -111,6 +111,9 @@ class BaseDownloader
                 unlink($file_path);
             }
         }
+        elseif (env('OFFLINE_PRIORITY', false)) {
+            throw new Exceptions\OfflinePriority();
+        }
 
         try {
             $output = ($this->proxyManager->getProxyAddress() . '/' . $this->proxyManager->getProxyIp() . ' → ' . $output . ' @');

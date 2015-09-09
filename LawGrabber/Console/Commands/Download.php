@@ -68,15 +68,13 @@ class Download extends Command
         if ($law_id) {
             if ($revision_date && $revision_date != '@') {
                 $this->downloadRevision($law_id, $revision_date, $this->re_download);
-            }
-            else {
+            } else {
                 $this->downloadCard($law_id, $this->re_download);
                 if ($revision_date == '@') {
                     $this->downloadRevision($law_id, null, $this->re_download);
                 }
             }
-        }
-        else {
+        } else {
             if ($this->reset) {
                 $this->downloadNewLaws();
             }
@@ -93,11 +91,14 @@ class Download extends Command
     {
         $this->jobsManager->deleteAll('download');
 
-        $laws = DB::table('laws')->where('date', '<', max_date())->whereIn('status', [Law::NOT_DOWNLOADED, Law::DOWNLOADED_BUT_NEEDS_UPDATE])->select('id', 'status')->get();
+        $laws = DB::table('laws')->where('date', '<', max_date())->whereIn('status', [
+            Law::NOT_DOWNLOADED,
+            Law::DOWNLOADED_BUT_NEEDS_UPDATE,
+        ])->select('id', 'status')->get();
         foreach ($laws as $law) {
             $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                 'id'          => $law->id,
-                're_download' => $law->status == Law::DOWNLOADED_BUT_NEEDS_UPDATE
+                're_download' => $law->status == Law::DOWNLOADED_BUT_NEEDS_UPDATE,
             ], 'download', 1);
         }
 
@@ -106,7 +107,7 @@ class Download extends Command
         foreach ($laws as $law) {
             $this->jobsManager->add('command.lawgrabber.download', 'downloadCard', [
                 'id'          => $law->id,
-                're_download' => true
+                're_download' => true,
             ], 'download', 1);
         }
 
@@ -269,8 +270,6 @@ class Download extends Command
                 $this->downloadCard($law->id, true);
                 $data = downloadRevision($revision->law_id, $revision->date, ['re_download' => $re_download]);
             }
-        } catch (Exceptions\ProxyBanned $e) {
-            throw $e;
         } catch (Exceptions\RevisionDateNotFound $e) {
             // If no revision date was found second time, this means that the revision actually does not have a text change.
             $revision->update([
@@ -278,6 +277,12 @@ class Download extends Command
             ]);
 
             return $revision;
+        } catch (Exceptions\ProxyBanned $e) {
+            throw $e;
+        } catch (Exceptions\OfflinePriority $e) {
+            $message = str_replace('ShvetsGroup\Service\Exceptions\\', '', get_class($e)) .
+                ($e->getMessage() ? ': ' . $e->getMessage() : '');
+            throw new JobChangePriorityException($message, -1);
         } catch (\Exception $e) {
             $message = str_replace('ShvetsGroup\Service\Exceptions\\', '', get_class($e)) .
                 ($e->getMessage() ? ': ' . $e->getMessage() : '');
