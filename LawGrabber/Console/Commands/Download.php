@@ -173,6 +173,7 @@ class Download extends Command
                 ];
                 if ($law->notHasText() || (isset($revision['no_text']) && $revision['no_text'] && $revision['date'] != $card['active_revision'])) {
                     $data['status'] = Revision::NO_TEXT;
+                    $data['text'] = '';
                 }
                 $r = Revision::findROrNew($data['law_id'], $data['date']);
                 $r->save();
