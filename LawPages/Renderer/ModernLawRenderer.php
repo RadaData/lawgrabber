@@ -2,8 +2,6 @@
 
 namespace LawPages\Renderer;
 
-use League\HTMLToMarkdown\HtmlConverter;
-
 class ModernLawRenderer implements RendererInterface
 {
     public function render($text)
@@ -16,6 +14,7 @@ class ModernLawRenderer implements RendererInterface
         $text = $this->formatTables($text);
         $text = $this->formatSubHeaders($text);
         $text = $this->removeParagraphsHTMl($text);
+        $text = $this->formatLinks($text);
 
         return $text;
     }
@@ -34,8 +33,23 @@ class ModernLawRenderer implements RendererInterface
 
     private function removeHead($text)
     {
-        $text = preg_replace('%^<div class="rvps(14)">[\s\S]+?</div>\n*%', '', $text);
+        $text = preg_replace_callback('%<div class="rvps(14|8)">[\s\S]+?</div>\n*%', function($matches) {
+            $result = $matches[0];
 
+            if (preg_match('%<table(?:.*?)><tbody>\n<tr(?:.*?)>\n<td(?:.*?)>\n([\s\S]*?)\n</td>\n<td(?:.*?)>\n([\s\S]*?)\n</td>\n</tr>\n<tr(?:.*?)>\n<td(?:.*?)>\n([\s\S]*?)\n</td>\n<td(?:.*?)>\n([\s\S]*?)\n</td>\n</tr>\n</tbody></table>%', $result, $m)) {
+                for ($i = 1; $i <= 4; $i++) {
+                    $m[$i] = strip_tags($m[$i]);
+                }
+                $result = "\n" .$m[1] . '          ' . $m[2] . "\n";
+                $result .= $m[3] . '          ' . $m[4];
+            }
+            else {
+                $result = '';
+            }
+
+            return $result;
+        }, $text);
+        
         //$text = preg_replace('%<p class="rvps6">[\s\S]+?</p>\n*%', '', $text);
         //$text = preg_replace('%<p class="rvps7"><span class="rvts44">[\s\S]+?</span></p>%', '', $text);
 
@@ -44,7 +58,7 @@ class ModernLawRenderer implements RendererInterface
 
     private function removeAnchors($text)
     {
-        $text = preg_replace('%<a name="n[0-9]+"></a>[\s\n\r]*%', '', $text);
+        $text = preg_replace('%<a name="[on][0-9]+"></a>[\s\n\r]*%', '', $text);
         return $text;
     }
 
@@ -100,19 +114,27 @@ class ModernLawRenderer implements RendererInterface
 
     private function formatSubHeaders($text)
     {
-        $text = preg_replace('%<span class="rvts9">\s*(.*?)\s*</span>%', '**$1**', $text);
+        $text = preg_replace('%\*%', '\*', $text);
+        $text = preg_replace('%<span class="rvts9">\s*(.*?)(\s*)</span>%', '**$1**$2', $text);
         $text = preg_replace('%<span class="rvts37"><span style="font-size:0px">-</span>(.*?)</span>%', '-$1', $text);
-
+        
         return $text;
     }
 
     private function removeParagraphsHTMl($text)
     {
-        $text = preg_replace('%<p class="rvps2">\s*(.*?)\s*</p>%', "$1\n", $text);
+        $text = preg_replace('%<p class="rvps2">\s*([\s\S]*?)\s*</p>%', "$1\n", $text);
+        $text = preg_replace('%<p class="rvps12">\s*([\s\S]*?)\s*</p>%', "$1", $text);
         $text = preg_replace('%<p>\s*</p>%', "\n", $text);
         $text = preg_replace('%<p class="rvps8"><br></p>%', "\n", $text);
 
         return $text;
     }
 
+    protected function formatLinks($text)
+    {
+        $text = preg_replace('%<a class="(?:rvts96|rvts99)" href="(.*?)(?:/paran[0-9]+)?(?:#n[0-9]+)?"(?: target="_blank")?>(.*?)</a>%', "[$2]($1)", $text);
+
+        return $text;
+    }
 }

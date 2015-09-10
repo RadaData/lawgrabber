@@ -37,7 +37,11 @@ class RenderManager {
      * @return RendererInterface
      */
     public function getRenderer() {
-        // TODO Get list of available law types.
-        return new ModernLawRenderer();
+        if (strpos($this->text, '<div style="width:550px;max-width:100%;margin:0 auto">') != false) {
+            return new FixedWidthLawRenderer();
+        }
+        else {
+            return new ModernLawRenderer();
+        }
     }
 }

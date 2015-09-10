@@ -16,12 +16,17 @@ class LawViewComposer
      */
     public function compose(View $view)
     {
-        $law = $view->offsetGet('law');
         if ($view->offsetExists('revision')) {
             $revision = $view->offsetGet('revision');
         }
         else {
-            $revision = $law->active_revision()->first();
+            if ($view->offsetExists('law')) {
+                $law = $view->offsetGet('law');
+                $revision = $law->active_revision()->first();
+            }
+            else {
+                abort(404, 'No law or revision passed.');
+            }
         }
 
         $is_raw = $view->offsetExists('raw') && $view->offsetGet('raw');

@@ -65,72 +65,12 @@ class History extends Command
             return false;
         }
 
-        $filename = $revision->law_id . '.md';
-        $text = $this->renderRevision($revision);
-        file_put_contents($this->getHistoryDir($filename), $text);
+        $filename = $this->getHistoryDir($revision->law_id . '.md');
+        $text = view('lawpages::law')->with([
+            'revision' => $revision
+        ]);
+
+        file_put_contents($filename, $text);
         return true;
-    }
-
-    public function renderRevision(Revision $revision)
-    {
-        $meta = $this->getLawMeta($revision);
-        $text = $this->getLawText($revision);
-        return $meta . $text;
-    }
-
-    private function getLawMeta(Revision $revision) {
-        $data = $this->getLawMetaData($revision);
-
-        $meta = "---\n";
-        foreach ($data as $key => $value) {
-            $meta .= $key . ': ' . $value . "\n";
-        }
-        $meta .= "---\n\n";
-        return $meta;
-    }
-
-    /**
-     * @param Revision $revision
-     *
-     * @return array
-     */
-    private function getLawMetaData(Revision $revision)
-    {
-        $law = $revision->getLaw();
-        $data = [
-            'Назва'         => $law->title,
-            'Стан'          => $law->state,
-            'Прийнято'      => $law->date,
-            //'Набрав чинність' => $law->getEnforceDate(),
-            'Останні зміни' => $this->formatRevisionTitle($law->getActiveRevision()),
-        ];
-
-        return $data;
-    }
-
-    private function formatRevisionTitle(Revision $revision) {
-        $output = $revision->date;
-        if ($revision->comment) {
-            $output .= ' (' . $revision->comment . ')';
-        }
-        return $output;
-    }
-
-    private function getLawText(Revision $revision) {
-        $law = $revision->getLaw();
-        if ($law->notHasText()) {
-            return '';
-        }
-
-        if ($revision->text) {
-            return $revision->text;
-        }
-
-        $last_revision_with_text = Revision::where('text', '<>', '')->where('law_id', $revision->law_id)->where('date', '<', $revision->date)->orderBy('date', 'asc')->first();
-        if (!$last_revision_with_text) {
-            throw new LawHasNoTextAtRevision($law, $revision);
-        }
-
-        return $last_revision_with_text->text;
     }
 }
