@@ -40,6 +40,7 @@ class CreateLawsTables extends Migration
             $table->tinyInteger('status')->default(0);
             $table->unique(['date', 'law_id'], 'law_revisions_dl');
             $table->index('status', 'law_revisions_s');
+            $table->index('law_id', 'law_revisions_l');
         });
 
         Schema::create('issuers', function(Blueprint $table)
