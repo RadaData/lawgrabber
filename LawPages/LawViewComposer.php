@@ -18,13 +18,11 @@ class LawViewComposer
     {
         if ($view->offsetExists('revision')) {
             $revision = $view->offsetGet('revision');
-        }
-        else {
+        } else {
             if ($view->offsetExists('law')) {
                 $law = $view->offsetGet('law');
                 $revision = $law->active_revision()->first();
-            }
-            else {
+            } else {
                 abort(404, 'No law or revision passed.');
             }
         }
@@ -34,7 +32,7 @@ class LawViewComposer
         $view->with('meta', $this->getLawMetaData($revision));
         $view->with('text', $this->getLawText($revision, $is_raw));
     }
-
+    
     /**
      * @param Revision $revision
      *
@@ -44,16 +42,46 @@ class LawViewComposer
     {
         $law = $revision->getLaw();
         $data = [
-            'Назва'         => $law->title,
-            'Стан'          => $law->state,
-            'Прийнято'      => $law->date,
-            //'Набрав чинність' => $law->getEnforceDate(),
-            'Останні зміни' => $this->formatRevisionTitle($law->getActiveRevision()),
+            'Назва' => $law->title,
+            'Тип' => implode(', ', $law->getTypes()),
+            'Видавник' => implode(', ', $law->getIssuers()),
+            'Стан' => $law->state,
+            'Прийнято' => $law->date,
         ];
 
-        // TODO: law type, law issuer.
+        if ($files = $this->getLawFiles($law)) {
+            $data['Файли'] = $files;
+        }
 
         return $data;
+    }
+
+    private function getLawFiles($law)
+    {
+        $rada_url = 'http://zakon1.rada.gov.ua';
+        $files = [];
+        if (preg_match_all('|Сигнальний документ — <b><a href="(.*?)"|', $law->card, $matches)) {
+            foreach ($matches[1] as $match) {
+                $files[] = $rada_url . $match;
+            }
+        }
+        return $files;
+    }
+
+    private function renderLawFiles($law)
+    {
+        $files = $this->getLawFiles($law);
+        
+        if (!$files) {
+            return '';
+        }
+
+        $result = "\n\n## Пов’язані файли\n\n";
+        foreach ($files as $file) {
+            $result .= '- [' . basename($file) . '](' . $file . ')' . "\n";
+        }
+        
+        return $result;
     }
 
     /**
@@ -61,10 +89,14 @@ class LawViewComposer
      *
      * @return string
      */
-    private function formatRevisionTitle(Revision $revision) {
+    private function formatRevisionTitle(Revision $revision)
+    {
         $output = $revision->date;
         if ($revision->comment) {
-            $output .= ' (' . $revision->comment . ')';
+            $comment = $revision->comment;
+            $comment = preg_replace('%<a href="(.*?)" target="_blank">(.*?)</a>%', '[$2]($1)', $comment);
+            
+            $output .= ' (' . $comment . ')';
         }
         return $output;
     }
@@ -83,8 +115,12 @@ class LawViewComposer
             return $text;
         }
 
-        $render_manager = new RenderManager($text);
-        return $render_manager->render();
+        $render_manager = new RenderManager($text, $revision);
+        $text = $render_manager->render();
+
+        $text .= $this->renderLawFiles($revision->getLaw());
+
+        return $text;
     }
 
     /**
@@ -93,7 +129,8 @@ class LawViewComposer
      * @return string
      * @throws LawHasNoTextAtRevision
      */
-    private function getRevisionText(Revision $revision) {
+    private function getRevisionText(Revision $revision)
+    {
         $law = $revision->getLaw();
         if ($law->notHasText()) {
             return '';
@@ -103,9 +140,14 @@ class LawViewComposer
             return $revision->text;
         }
 
-        $last_revision_with_text = Revision::where('text', '<>', '')->where('law_id', $revision->law_id)->where('date', '<', $revision->date)->orderBy('date', 'asc')->first();
+        $last_revision_with_text = Revision::where('text', '<>', '')
+            ->where('law_id', $revision->law_id)
+            ->where('date', '<', $revision->date)
+            ->orderBy('date', 'asc')
+            ->first();
+        
         if (!$last_revision_with_text) {
-            throw new LawHasNoTextAtRevision($law, $revision);
+            return '{ТЕКСТ ВІДСУТНІЙ}';
         }
 
         return $last_revision_with_text->text;

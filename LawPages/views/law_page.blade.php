@@ -1,3 +1,4 @@
+<pre>
 ---
 @foreach ($meta as $key => $value)
 @if (is_array($value))
@@ -11,4 +12,4 @@
 @endforeach
 ---
 
-{!! $text !!}
+{{ $text }}</pre>

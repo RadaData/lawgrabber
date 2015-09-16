@@ -29,6 +29,7 @@ class LawPagesServiceProvider extends RouteServiceProvider
 
         $this->loadViewsFrom(__DIR__ . '/views', 'lawpages');
         $this->app['view']->composer('lawpages::law', 'LawPages\LawViewComposer');
+        $this->app['view']->composer('lawpages::law_page', 'LawPages\LawViewComposer');
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace LawPages\Renderer;
 
+use LawGrabber\Laws\Revision;
+
 class RenderManager {
 
     /**
@@ -10,7 +12,12 @@ class RenderManager {
     private $text;
 
     /**
-     * @var RendererInterface
+     * @var Revision
+     */
+    private $revision;
+
+    /**
+     * @var BaseRenderer
      */
     private $renderer;
 
@@ -19,9 +26,10 @@ class RenderManager {
      * 
      * @param $text
      */
-    public function __construct($text)
+    public function __construct($text, Revision $revision)
     {
         $this->text = $text;
+        $this->revision = $revision;
         $this->renderer = $this->getRenderer();
     }
     
@@ -30,11 +38,11 @@ class RenderManager {
      */
     public function render()
     {
-        return $this->renderer->render($this->text);
+        return $this->renderer->render($this->text, $this->revision);
     }
 
     /**
-     * @return RendererInterface
+     * @return BaseRenderer
      */
     public function getRenderer() {
         if (strpos($this->text, '<div style="width:550px;max-width:100%;margin:0 auto">') != false) {

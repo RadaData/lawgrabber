@@ -71,6 +71,7 @@ class CardDownloader extends BaseDownloader
             throw new Exceptions\DocumentHasErrors("Law date is missing in '{$law_id}'");
         }
         $data['title'] = $crawler->filterXPath('//h1')->html();
+        $data['title'] = str_replace(' <img src="http://zakonst.rada.gov.ua/images/fav1.gif" title="Популярний">', '', $data['title']);
 
         $data['has_text'] = (strpos($html, 'Текст відсутній') === false && strpos($html, 'Текст документа') !== false);
 
