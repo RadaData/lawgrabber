@@ -25,7 +25,7 @@ class FixedWidthLawRenderer extends BaseRenderer
 
     public function removeWrapper($text)
     {
-        $text = preg_replace('|<p></p>\n<div style="width:550px;max-width:100%;margin:0 auto"><pre> *([\s\S]*?)</pre></div>\n<p></p>|',
+        $text = preg_replace('|<p></p>\n<div style="width:550px;max-width:100%;margin:0 auto"><pre> *([\s\S]*?)</pre></div>\n<p></p>|u',
             "$1\n", $text);
 
         return $text;
@@ -33,30 +33,31 @@ class FixedWidthLawRenderer extends BaseRenderer
 
     public function escapeAsterisk($text)
     {
-        $text = preg_replace('%\*%', '\*', $text);
+        $text = preg_replace('%\*%u', '\*', $text);
         return $text;
     }
 
     public function addBreaks($text)
     {
-        $text = preg_replace('%([^\n])(<a name="[on][0-9]+"></a>)%', "$1\n$2", $text);
-        $text = preg_replace('%<br */?>%', "\n", $text);
+        $text = preg_replace('%([^\n])(<a name="[on][0-9]+"></a>)%u', "$1\n$2", $text);
+        $text = preg_replace('%<br */?>%u', "\n", $text);
 
         return $text;
     }
 
     public function removeAnchors($text)
     {
-        $text = preg_replace('%<a name="[on][0-9]+"></a>%', '', $text);
+        $text = preg_replace('%<a name="[on][0-9]+"></a>%u', '', $text);
         return $text;
     }
 
     public function removeComments($text)
     {
-        $text = preg_replace_callback('%<i>(?:\s*)((?:[\{\(])(?:[^\)]*?)(?:\(\s*<(?:a|span)[^<]*?</(?:a|span)>\s*\)[^\(]*?)+(?:[^\)\}]*?)(?:[\}\)])(?:\s*))+</i>\n?%',
+        $text = preg_replace_callback('%<i>\s*(?:(\n)?(?:[{(])(?:[^{}()<]*(?:\([^()<]*\))?[^{}()<]*)(?:\(\s*<(?:a|span)[^<]*?</(?:a|span)>\s*\)(?:[^{}()<]*(?:\([^()<]*\))?[^{}()<]*))+(?:[^})<]*?)(?:[})])(?:\s*(\n))?)+\s*</i>\n?%u',
             function ($matches) {
+                $a = 1;
             }, $text);
-        $text = preg_replace_callback('%(\n)?(?:[\{\(])(?:[^\)]*?)(?:\(\s*<(?:a|span)[^<]*?</(?:a|span)>\s*\)[^\(]*?)+(?:[^\)\}]*?)(?:[\}\)])(?:\s*(\n))?%',
+        $text = preg_replace_callback('%(\n)?(?:[{(])(?:[^{}()<]*(?:\([^()<]*\))?[^{}()<]*)(?:\(\s*<(?:a|span)[^<]*?</(?:a|span)>\s*\)(?:[^{}()<]*(?:\([^()<]*\))?[^{}()<]*))+(?:[^})<]*?)(?:[})])(?:\s*(\n))?%u',
             function ($matches) {
                 if (array_get($matches, 1, '') && array_get($matches, 2, '')) {
                     return "\n\n";
@@ -71,22 +72,22 @@ class FixedWidthLawRenderer extends BaseRenderer
 
     function formatTitleLine($line, $h = 1)
     {
-        $line = preg_replace('%(<b>|</b>)%', '', $line);
-        $line = preg_replace('%^\s*%m', '', $line);
-        $line = preg_replace('%\s*$%m', '', $line);
-        $line = preg_replace('%\n\n\n%', '\n', $line);
+        $line = preg_replace('%(<b>|</b>)%u', '', $line);
+        $line = preg_replace('%^\s*%mu', '', $line);
+        $line = preg_replace('%\s*$%mu', '', $line);
+        $line = preg_replace('%\n\n\n%u', '\n', $line);
         
         $line = preg_replace('%\x{00a0}%u', '', $line);
         $line = preg_replace('%(?<= |^)(\S) (\S) (\S)(?: (\S))?(?: (\S))?(?: (\S))?(?: (\S))?(?: (\S))?(?: (\S))?%u', '$1$2$3$4$5$6$7$8$9', $line);
 
-        $line = preg_replace('%^%m', str_repeat('#', $h) . ' ', $line);
+        $line = preg_replace('%^%mu', str_repeat('#', $h) . ' ', $line);
         return $line;
     }
 
     function formatSubtitleLine($line)
     {
         $line = trim($line);
-        $line = preg_replace('%\n\n\n%', '\n', $line);
+        $line = preg_replace('%\n\n\n%u', '\n', $line);
         $line = '_' . $line . '_';
         return $line;
     }
@@ -126,7 +127,7 @@ class FixedWidthLawRenderer extends BaseRenderer
     public function formatSubHeaders($text)
     {
         $text = preg_replace('%<b>Стаття\s+([0-9]+\.)</b>%u', '**Стаття $1**', $text);
-        $text = preg_replace_callback('%<b>([\s\S]*?)</b>%', function($matches) {
+        $text = preg_replace_callback('%<b>([\s\S]*?)</b>%u', function($matches) {
             $text = $matches[1];
             if (strpos($text, "\n") !== FALSE) {
                 return $this->formatTitleLine($text, 3) . "\n";
@@ -144,13 +145,13 @@ class FixedWidthLawRenderer extends BaseRenderer
         
         $text = preg_replace_callback('%(^|\n)(     )(?!м.Київ)([^ ][\s\S]*?)(?=(?:\n |\n\n?#|\n\n?--|\n__|\n\*\*|$))%u', function($matches){
             $text = $matches[3];
-            $text = preg_replace('%(?<! ) {2,10}(?! )%m', " ", $text);
-            $text = preg_replace('%\n%', "", $text);
+            $text = preg_replace('%(?<! ) {2,10}(?! )%mu', " ", $text);
+            $text = preg_replace('%\n%u', "", $text);
 
             $result = $matches[1] . $text . "\n";
             return $result;
         }, $text);
-        $text = preg_replace('% *$%m', '', $text);
+        $text = preg_replace('% *$%mu', '', $text);
 
         return $text;
     }

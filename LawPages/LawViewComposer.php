@@ -112,6 +112,7 @@ class LawViewComposer
         $text = $this->getRevisionText($revision);
 
         if ($is_raw) {
+            $text = preg_replace('%([^\n])(<a name="[on][0-9]+"></a>)%u', "$1\n$2", $text);
             return $text;
         }
 
