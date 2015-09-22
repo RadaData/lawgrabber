@@ -149,6 +149,7 @@ return [
          * Custom stuff...
          */
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+        GrahamCampbell\GitHub\GitHubServiceProvider::class,
 
         LawGrabber\Proxy\ProxyServiceProvider::class,
         LawGrabber\Downloader\DownloaderServiceProvider::class,
@@ -208,6 +209,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View'      => Illuminate\Support\Facades\View::class,
 
+        'GitHub' => GrahamCampbell\GitHub\Facades\GitHub::class
     ],
 
 ];

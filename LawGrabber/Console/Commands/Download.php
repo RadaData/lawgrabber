@@ -154,8 +154,8 @@ class Download extends Command
             $law->card = $card['card'];
             $law->title = $card['title'];
             $law->date = $card['date'];
-            $law->issuers()->sync($card['meta'][Issuer::FIELD_NAME]);
-            $law->types()->sync($card['meta'][Type::FIELD_NAME]);
+            $law->setIssuers($card['meta'][Issuer::FIELD_NAME]);
+            $law->setTypes($card['meta'][Type::FIELD_NAME]);
             $law->state = isset($card['meta'][State::FIELD_NAME]) ? reset($card['meta'][State::FIELD_NAME]) : State::STATE_UNKNOWN;
 
             $law->has_text = $card['has_text'] ? $law->has_text = Law::HAS_TEXT : $law->has_text = Law::NO_TEXT;

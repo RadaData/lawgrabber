@@ -22,14 +22,20 @@ class RenderManager {
     private $renderer;
 
     /**
+     * @var bool
+     */
+    private $is_raw;
+
+    /**
      * RenderManager constructor.
      * 
      * @param $text
      */
-    public function __construct($text, Revision $revision)
+    public function __construct($text, Revision $revision, $is_raw)
     {
         $this->text = $text;
         $this->revision = $revision;
+        $this->is_raw = $is_raw;
         $this->renderer = $this->getRenderer();
     }
     
@@ -45,7 +51,10 @@ class RenderManager {
      * @return BaseRenderer
      */
     public function getRenderer() {
-        if (strpos($this->text, '<div style="width:550px;max-width:100%;margin:0 auto">') != false) {
+        if ($this->is_raw) {
+            return new RawLawRenderer();
+        }
+        else if (strpos($this->text, '<div style="width:550px;max-width:100%;margin:0 auto">') != false) {
             return new FixedWidthLawRenderer();
         }
         else {

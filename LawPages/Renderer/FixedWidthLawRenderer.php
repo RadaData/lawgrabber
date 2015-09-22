@@ -4,7 +4,7 @@ namespace LawPages\Renderer;
 
 use LawGrabber\Laws\Revision;
 
-class FixedWidthLawRenderer extends BaseRenderer
+class FixedWidthLawRenderer extends WithChangesRenderer
 {
     public function render($text, Revision $revision)
     {
@@ -136,6 +136,7 @@ class FixedWidthLawRenderer extends BaseRenderer
                 return '**' . $text . '**';
             }
         }, $text);
+        $text = preg_replace('%<i>\s*([\s\S]*?)\s*</i>%u', '_$1_', $text);
         return $text;
     }
 
@@ -155,5 +156,4 @@ class FixedWidthLawRenderer extends BaseRenderer
 
         return $text;
     }
-
 }

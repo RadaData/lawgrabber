@@ -22,6 +22,7 @@ use Illuminate\Database\Query\Builder;
  * @property-read Collection|Type[] $types
  * @property-read Collection|Revision[] $revisions
  * @property-read Collection|\$related[] $morphedByMany
+ * @method static Builder|Law find($value)
  * @method static Builder|Law whereId($value)
  * @method static Builder|Law whereDate($value)
  * @method static Builder|Law whereStatus($value)
@@ -82,6 +83,13 @@ class Law extends Model
     }
 
     /**
+     * @param array $types
+     */
+    public function setTypes($types) {
+        $this->types()->sync($types);
+    }
+
+    /**
      * @return array
      */
     public function getIssuers()
@@ -92,6 +100,13 @@ class Law extends Model
             $result[] = $item->name;
         });
         return $result;
+    }
+
+    /**
+     * @param array $issuers
+     */
+    public function setIssuers($issuers) {
+        $this->issuers()->sync($issuers);
     }
 
     /**

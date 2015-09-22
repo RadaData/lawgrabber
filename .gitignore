@@ -11,4 +11,5 @@ Homestead.json
 grab.sh
 send.sh
 storage/banned_proxies.txt
+storage/github
 tests/db/test.sqlite

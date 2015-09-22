@@ -4,7 +4,7 @@ namespace LawPages\Renderer;
 
 use LawGrabber\Laws\Revision;
 
-class ModernLawRenderer extends BaseRenderer
+class ModernLawRenderer extends WithChangesRenderer
 {
     public function render($text, Revision $revision)
     {
@@ -113,5 +113,4 @@ class ModernLawRenderer extends BaseRenderer
 
         return $text;
     }
-
 }

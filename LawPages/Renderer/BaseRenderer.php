@@ -21,18 +21,7 @@ abstract class BaseRenderer
 
     public function formatLinks($text, Revision $revision)
     {
-        $text = preg_replace_callback('%<a (?:class="(?:rvts96|rvts99)" )?href="(.*?)(?:/ed[0-9]+)?(?:/paran[0-9]+)?(?:#n[0-9]+)?"(?: target="_blank")?>(.*?)</a>%',
-            function ($matches) use ($revision) {
-                $url = urldecode($matches[1]);
-                $text = $matches[2];
-                if (!$url || $url == '/laws/show/' . $revision->law_id) {
-                    return "[$text]";
-                }
-                else {
-                    return "[$text]($url)";
-                }
-            }, $text);
-        $text = preg_replace('%\( \[(.*?)\]\((.*?)\) \)%', "([$2]($1))", $text);
+        $text = preg_replace('%<a (?:class="(?:rvts96|rvts99)" )?href="(.*?)(?:/ed[0-9]+)?(?:/paran[0-9]+)?(#n[0-9]+)?"(?: target="_blank")?>(.*?)</a>%', '<a href="$1.md$2">$3</a>', $text);
 
         return $text;
     }

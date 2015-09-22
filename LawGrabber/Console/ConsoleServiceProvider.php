@@ -27,10 +27,6 @@ class ConsoleServiceProvider extends ServiceProvider
             return new Commands\Download($app['lawgrabber.jobs.manager']);
         });
 
-        $this->app->singleton('command.lawgrabber.history', function ($app) {
-            return new Commands\History();
-        });
-
         $this->app->singleton('command.lawgrabber.start', function ($app) {
             return new Commands\Start($app['lawgrabber.jobs.manager'], $app['lawgrabber.proxy.manager']);
         });
@@ -44,7 +40,6 @@ class ConsoleServiceProvider extends ServiceProvider
             'command.lawgrabber.cleanup',
             'command.lawgrabber.discover',
             'command.lawgrabber.download',
-            'command.lawgrabber.history',
             'command.lawgrabber.start',
             'command.lawgrabber.status',
         ]);

@@ -45,8 +45,9 @@ class LawViewComposer
             'Назва' => $law->title,
             'Тип' => implode(', ', $law->getTypes()),
             'Видавник' => implode(', ', $law->getIssuers()),
-            'Стан' => $law->state,
+            'Стан' => $this->getRevisionState($revision),
             'Прийнято' => $law->date,
+            'Сайт ВР' => 'http://zakon.rada.gov.ua/go/' . $law->id //. ($law->active_revision != $revision->date ? '/ed' . str_replace('-', '', $revision->date) : ''),
         ];
 
         if ($files = $this->getLawFiles($law)) {
@@ -54,6 +55,42 @@ class LawViewComposer
         }
 
         return $data;
+    }
+    
+    public function getRevisionState(Revision $revision) {
+        if ($revision->getLaw()->state == 'Не визначено') {
+            return 'Не визначено';
+        }
+        
+        $activities = [
+            'Прийняття' => 'Набирає чинності',
+            'Введення в дію' => 'Чинний',
+            'Набрання чинності' => 'Чинний',
+            'Припинення дії' => 'Втратив чинність',
+            'Зупинення дії' => 'Дію зупинено',
+            'Відновлення дії' => 'Дію відновлено',
+            'Не набрав чинності' => 'Не набрав чинності'
+        ];
+        $result = null;
+        foreach (explode("\n", $revision->comment) as $line) {
+            foreach ($activities as $activity => $new_state) {
+                if (preg_match('%' . $activity . '(?:$|,)%u', $line)) {
+                    $result = $new_state;
+                    break;
+                }
+            }
+        }
+        if ($result) {
+            return $result;
+        }
+        
+        $previous_revision = $revision->getPreviousRevision();
+        if ($previous_revision) {
+            return $this->getRevisionState($previous_revision);
+        }
+        else {
+            return $revision->getLaw()->state;
+        }
     }
 
     private function getLawFiles($law)
@@ -86,23 +123,7 @@ class LawViewComposer
 
     /**
      * @param Revision $revision
-     *
-     * @return string
-     */
-    private function formatRevisionTitle(Revision $revision)
-    {
-        $output = $revision->date;
-        if ($revision->comment) {
-            $comment = $revision->comment;
-            $comment = preg_replace('%<a href="(.*?)" target="_blank">(.*?)</a>%', '[$2]($1)', $comment);
-            
-            $output .= ' (' . $comment . ')';
-        }
-        return $output;
-    }
-
-    /**
-     * @param Revision $revision
+     * @param bool $is_raw
      *
      * @return string
      * @throws LawHasNoTextAtRevision
@@ -111,12 +132,7 @@ class LawViewComposer
     {
         $text = $this->getRevisionText($revision);
 
-        if ($is_raw) {
-            $text = preg_replace('%([^\n])(<a name="[on][0-9]+"></a>)%u', "$1\n$2", $text);
-            return $text;
-        }
-
-        $render_manager = new RenderManager($text, $revision);
+        $render_manager = new RenderManager($text, $revision, $is_raw);
         $text = $render_manager->render();
 
         $text .= $this->renderLawFiles($revision->getLaw());
@@ -130,28 +146,28 @@ class LawViewComposer
      * @return string
      * @throws LawHasNoTextAtRevision
      */
-    private function getRevisionText(Revision $revision)
-    {
+    public function getRevisionText(Revision $revision) {
         $law = $revision->getLaw();
         if ($law->notHasText()) {
             return '';
         }
-
         if ($revision->text) {
             return $revision->text;
         }
 
-        $last_revision_with_text = Revision::where('text', '<>', '')
+        $previous_revision = Revision::where('text', '<>', '')
             ->where('law_id', $revision->law_id)
             ->where('date', '<', $revision->date)
-            ->orderBy('date', 'asc')
+            ->orderBy('date', 'desc')
             ->first();
-        
-        if (!$last_revision_with_text) {
-            return '{ТЕКСТ ВІДСУТНІЙ}';
+
+        if (!$previous_revision) {
+            return '';
         }
 
-        return $last_revision_with_text->text;
+        return $previous_revision->text;
+
     }
+
 
 }

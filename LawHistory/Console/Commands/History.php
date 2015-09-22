@@ -3,9 +3,12 @@
 namespace LawHistory\Console\Commands;
 
 use Illuminate\Console\Command;
-use LawGrabber\Laws\Exceptions\LawHasNoTextAtRevision;
+use Illuminate\Database\Query;
+use Illuminate\Database\Eloquent;
 use LawGrabber\Laws\Revision;
-use Log;
+use LawHistory\Formatter;
+use LawHistory\Git;
+use DB;
 
 class History extends Command
 {
@@ -15,6 +18,8 @@ class History extends Command
      * @var string
      */
     protected $signature = 'history
+                            {--c|create : Whether or not to create new fresh repository.}
+                            {--r|raw : Whether or not to put raw texts into repository.}
                             {--d|date : Generate history up to this date.}';
 
     /**
@@ -25,73 +30,161 @@ class History extends Command
     protected $description = 'Generate document history.';
 
     /**
+     * @var Git
+     */
+    private $git;
+
+    /**
+     * @var Formatter
+     */
+    private $formatter;
+
+    /**
      * Execute console command.
      */
     public function handle()
     {
-        $this->gitReset();
+        $is_raw = (bool)$this->option('raw');
+        $create = (bool)$this->option('create');
+        $this->formatter = new Formatter($this, $is_raw);
+        $this->git = new Git($this, $is_raw ? 'zakon' : 'zakon-markdown');
 
-        foreach ($this->selectRevisions() as $revision) {
-            try {
-                if ($this->save($revision)) {
-                    $this->gitCommit($revision);
+        if ($create) {
+            DB::table('law_revisions')->update('r_' . $this->git->repository_name, 0);
+            $this->git->gitReset();
+        }
+
+        $this->forAllDatesWithLaws(function ($dates) {
+            foreach ($dates as $date) {
+                if ($this->isFutureDate($date->date)) {
+                    $this->git->gitCheckIfOutdatedAndPush('master');
                 }
+                $this->handleOneDayOfLaws($date->date);
             }
-            catch (\Exception $e) {
-                $this->error($e->getMessage());
-            }
-        }
-        $this->gitPush();
-    }
-
-    private function selectRevisions() {
-//        $date = $this->option('date') ?: env('MAX_CRAWL_DATE', date('Y-m-d'));
-//        $date = '1886-09-09';
-        return Revision::where('law_id', '254к/96-вр')->get(); // where('date', '<', $date)->get();
-    }
-
-    private function gitReset() {
-        $dir = $this->getHistoryDir();
-        if (is_dir($dir)) {
-            exec('rm -rf ' . $dir);
-        }
-        mkdir($dir, 0777, true);
-        exec('cd ' . $dir . '; git init');
+        });
+        $this->git->gitCheckIfOutdatedAndPush('master');
     }
     
-    private function gitCommit(Revision $revision) {
-        $dir = $this->getHistoryDir();
-        $commit_time = strtotime($revision->date);
-        $commit_message = $this->formatRevisionTitle($revision);
-        $command = "cd $dir; git add . ; GIT_AUTHOR_DATE=$commit_time GIT_COMMITTER_DATE=$commit_time git commit -m \"$commit_message\"";
-        exec($command);
-
-        $this->info('History saved: ' . $revision->law_id . '/ed' . $revision->date);
+    public function isFutureDate($date) {
+        return $date > date('Y-m-d');
     }
-    
-    private function formatRevisionTitle(Revision $revision)
+
+    public function forAllDatesWithLaws($func)
     {
-        $output = $revision->law_id . '/ed' . str_replace('-', '', $revision->date);
+        $this->filterQuery(DB::table('law_revisions')
+            ->select('date')->where('r_' . $this->git->repository_name, 0)
+            ->groupBy('date'))->chunk(300, $func);
+    }
 
-        if ($revision->comment) {
-            $comment = $revision->comment;
-            $comment = preg_replace('%<a href="(.*?)" target="_blank">(.*?)</a>%', '[$2]($1)', $comment);
+    /**
+     * @param Eloquent\Builder|Query\Builder $query
+     * @return Eloquent\Builder|Query\Builder
+     */
+    private function filterQuery($query)
+    {
+//        $date = '1991-11-05';
+//        $query->whereIn('law_id', ['254к/96-вр', '586-18'])
+//            ->where('date', '>=', $date);
+        
+        return $query;
+    }
 
-            $output .= ': ' . $comment;
+    public function handleOneDayOfLaws($date)
+    {
+        $commits = $this->groupRevisionsForCommits($date);
+
+        foreach ($commits as $commit) {
+            $branch = $this->getBranchName($commit, $date);
+            $this->git->gitCheckout($branch);
+
+            $this->doChanges($commit);
+
+            $message = $this->formatter->createCommitMessage($branch, $commit);
+            $this->git->gitCommit($date, $message);
+
+            if ($branch != 'master') {
+                $this->git->gitPush($branch);
+                $pr_title = $this->formatter->createPRTitle($branch, $commit);
+                $pr_body = $this->formatter->createPRBody($branch, $commit);
+                $this->git->gitSendPullRequest($branch, $pr_title, $pr_body);
+            }
+            
+            DB::table('law_revisions')->where('date', $date)->whereIn('law_id', array_keys($commit))
+                ->update('r_' . $this->git->repository_name, 1);
         }
-        return $output;
     }
 
-    private function gitPush() {
-        $dir = $this->getHistoryDir();
-        $command = "cd $dir; git remote add origin git@github.com:RadaData/zakon.git; git push -u -f origin master";
-        exec($command);
-    }
-
-    public function getHistoryDir($filename = null)
+    public function groupRevisionsForCommits($date)
     {
-        $dir = base_path() . '/' . trim(env('HISTORY_DIR', '../history'), '/');
-        return $dir . ($filename ? '/' . $filename : '');
+        /**
+         * @var $all Revision[]
+         */
+        $all = $this->filterQuery(Revision::where(['date' => $date]))->get();
+
+        $revisions = [];
+        foreach ($all as $revision) {
+            $revisions[$revision->law_id] = $revision;
+        }
+
+        foreach ($revisions as $revision) {
+            $revision->related = array_merge($this->getRevisionReferences($revision), $revision->related ?: []);
+            foreach ($revision->related as $ref) {
+                if (!isset($revisions[$ref])) {
+                    continue;
+                }
+                $r = $revisions[$ref]->related ?: [];
+                $r[$revision->law_id] = $revision->law_id;
+                $revisions[$ref]->related = $r;
+            }
+        }
+
+        $commits = [];
+        reset($revisions);
+        while (list($key, $revision) = each($revisions)) {
+            $commit = [$key => $revision];
+            foreach ($revision->related as $ref) {
+                if (!isset($revisions[$ref])) {
+                    continue;
+                }
+                $commit[$ref] = $revisions[$ref];
+                unset($revisions[$ref]);
+            }
+
+            $main_revision = $this->getRevisionWithNoReferences($commit);
+            unset($commit[$main_revision->law_id]);
+            $commit = array_merge([$main_revision->law_id => $main_revision], $commit);
+
+            $commits[] = $commit;
+        }
+        return $commits;
+    }
+
+    private function getRevisionReferences(Revision $revision)
+    {
+        if ($revision->references) {
+            return $revision->references;
+        }
+        preg_match_all('%<a href=".*?" target="_blank">(.*?)</a>%u', $revision->comment, $matches);
+        $result = isset($matches[1]) ? $matches[1] : [];
+        $revision->references = array_combine($result, $result);
+        return $revision->references;
+    }
+
+    private function getRevisionWithNoReferences(array $commit)
+    {
+        foreach ($commit as $revision) {
+            if (!$this->getRevisionReferences($revision)) {
+                return $revision;
+            }
+        }
+        return reset($commit);
+    }
+
+    public function doChanges(array $commit)
+    {
+        foreach ($commit as $revision) {
+            $this->save($revision);
+        }
     }
 
     public function save(Revision $revision)
@@ -100,16 +193,34 @@ class History extends Command
             return false;
         }
 
-        $filename = $this->getHistoryDir($revision->law_id . '.md');
-        $text = view('lawpages::law')->with([
-            'revision' => $revision
-        ]);
+        $text = $this->formatter->getRevisionText($revision);
+        $path = $this->getRevisionFilePath($revision);
+        
+        file_put_contents($path, $text);
+        
+        return true;
+    }
 
-        $dir = preg_replace('|/[^/]*$|', '/', $filename);
+    public function getRevisionFilePath(Revision $revision)
+    {
+        $path = $this->formatter->getLawURL($revision->law_id, $this->git->getHistoryDir());
+        $this->createDirs($path);
+        return $path;
+    }
+
+    public function createDirs($path)
+    {
+        $dir = preg_replace('|/[^/]*$|', '/', $path);
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
-        file_put_contents($filename, $text);
-        return true;
+    }
+    
+    public function getBranchName($commit, $date)
+    {
+        if ($this->isFutureDate($date)) {
+            return reset($commit)->law_id . '@' . $date;
+        }
+        return 'master';
     }
 }

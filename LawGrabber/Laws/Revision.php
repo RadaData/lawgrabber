@@ -4,6 +4,7 @@ namespace LawGrabber\Laws;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
+use DB;
 
 /**
  * LawGrabber\Laws\Revision
@@ -69,5 +70,25 @@ class Revision extends Model
     public function getLaw()
     {
         return Law::find($this->law_id);
+    }
+
+    /**
+     * @return Revision|null
+     */
+    public function getPreviousRevision()
+    {
+        $revisions = DB::table('law_revisions')->select('date')->where('law_id', $this->law_id)->get();
+        
+        $previous = null;
+        $result = null;
+        foreach ($revisions as $revision) {
+            if ($revision->date == $this->date) {
+                $result = $previous ? $previous->date : null;
+                break;
+            }
+            $previous = $revision;
+        }
+        
+        return $result ? static::where('law_id', $this->law_id)->where('date', $result)->first() : null;
     }
 }
