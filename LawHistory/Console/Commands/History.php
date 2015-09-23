@@ -51,7 +51,7 @@ class History extends Command
 
         if ($create) {
             $this->info('Resetting repository caches.');
-            DB::table('law_revisions')->update(['r_' . $this->git->repository_name => 0]);
+            DB::table('law_revisions')->where('r_' . $this->git->repository_name, '>', 0)->update(['r_' . $this->git->repository_name => 0]);
             
             $this->info('Initializing repository.');
             $this->git->gitReset();
