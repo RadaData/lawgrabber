@@ -22,5 +22,5 @@
 
 ### Цікаві документи
 
-[Конституція України](/RadaData/zakon/blob/master/laws/show/254к/96-вр.md)
-[Про прокуратуру](/RadaData/zakon/blob/master/laws/show/1789-12.md)
+- [Конституція України](/RadaData/zakon/blob/master/laws/show/254к/96-вр.md)
+- [Про прокуратуру](/RadaData/zakon/blob/master/laws/show/1789-12.md)
