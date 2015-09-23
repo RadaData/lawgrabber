@@ -64,14 +64,12 @@ class History extends Command
                     $this->git->gitCheckIfOutdatedAndPush('master');
                 }
                 
-                $this->handleOneDayOfLaws($date->date);
+                $i += $this->handleOneDayOfLaws($date->date);
                 
                 if ($i > 100) {
                     $i = 0;
                     $this->git->gitCheckIfOutdatedAndPush('master');
                 }
-                
-                $i++;
             }
         });
         $this->git->gitCheckIfOutdatedAndPush('master');
@@ -124,6 +122,7 @@ class History extends Command
             DB::table('law_revisions')->where('date', $date)->whereIn('law_id', array_keys($commit))
                 ->update(['r_' . $this->git->repository_name => 1]);
         }
+        return count($commits);
     }
 
     public function groupRevisionsForCommits($date)
