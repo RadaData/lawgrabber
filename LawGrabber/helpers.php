@@ -78,8 +78,8 @@ function delTree($dir) {
 }
 
 function better_trim($text) {
-	$text = preg_replace('|^[\n\s ]*|', '', $text);
-	$text = preg_replace('|[\n\s ]*$|', '', $text);
+	$text = preg_replace('|^[\n\s ]*|u', '', $text);
+	$text = preg_replace('|[\n\s ]*$|u', '', $text);
 	return $text;
 }
 

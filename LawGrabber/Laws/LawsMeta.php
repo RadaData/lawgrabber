@@ -124,9 +124,9 @@ class LawsMeta
                         $issuer->id = str_replace('/laws/main/', '', $issuer->url);
                         $issuer->group_name = $group;
                         $issuer->name = better_trim($issuer_link->filterXPath('//b')->text());
-                        $issuer->full_name = preg_replace('|<b>.*?</b> *|', '', $issuer_link->filterXPath('//font')->html());
+                        $issuer->full_name = preg_replace('|<b>.*?</b> *|u', '', $issuer_link->filterXPath('//font')->html());
                         if ($issuer->full_name) {
-                            $issuer->full_name = preg_replace('|^\((.*?)\)$|', '$1', $issuer->full_name);
+                            $issuer->full_name = preg_replace('|^\((.*?)\)$|u', '$1', $issuer->full_name);
                             // Swap values.
                             list($issuer->name,$issuer->full_name) = array($issuer->full_name, $issuer->name);
                         }

@@ -69,8 +69,8 @@ class Formatter {
             }
         }, $comment);
 
-        $comment = preg_replace_callback('%(.+?)(, підстава.*)?$%', function($matches) use ($revision){
-            $status = array_get($matches, 1, '');
+        $comment = preg_replace_callback('%([\s\S]+?)(, підстава.*)?$%', function($matches) use ($revision){
+            $statuses = explode("\n", array_get($matches, 1, ''));
             $reason = array_get($matches, 2, '');
 
             $law = $revision->getLaw();
@@ -82,70 +82,202 @@ class Formatter {
             $type_name = $type->name;
             $type_name = mb_strtolower(mb_substr($type_name, 0, 1)) . mb_substr($type_name, 1, mb_strlen($type_name) - 1);
 
-            if ($status == 'Прийняття') {
-                switch ($type->getRid()) {
-                    case 'f': $status = 'Прийнята '; break;
-                    case 'b': $status = 'Прийнято '; break;
-                    case 'b+': $status = 'Прийняті '; break;
-                    default: $status = 'Прийнятий '; break;
+            $i = 0;
+            foreach ($statuses as &$status) {
+                $status = trim($status);
+                
+                if ($status == 'Прийняття') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Прийнята';
+                            break;
+                        case 'b':
+                            $status = 'Прийнято';
+                            break;
+                        case 'b+':
+                            $status = 'Прийняті';
+                            break;
+                        default:
+                            $status = 'Прийнятий';
+                            break;
+                    }
                 }
-            }
-            elseif ($status == 'Набрання чинності') {
-                switch ($type->getRid()) {
-                    case 'f': $status = 'Набрала чинності '; break;
-                    case 'b': $status = 'Набрало чинності '; break;
-                    case 'b+': $status = 'Набрали чинності '; break;
-                    default: $status = 'Набрав чинності '; break;
+                if ($status == 'Ратифікація') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Ратифікована';
+                            break;
+                        case 'b':
+                            $status = 'Ратифіковано';
+                            break;
+                        case 'b+':
+                            $status = 'Ратифіковані';
+                            break;
+                        default:
+                            $status = 'Ратифікований';
+                            break;
+                    }
                 }
-            }
-            elseif ($status == 'Введення в дію') {
-                switch ($type->getRid()) {
-                    case 'f': $status = 'Введена в дію '; break;
-                    case 'b': $status = 'Введено в дію '; break;
-                    case 'b+': $status = 'Введені в дію '; break;
-                    default: $status = 'Введений в дію '; break;
+                if ($status == 'Скасування') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Скасована';
+                            break;
+                        case 'b':
+                            $status = 'Скасовано';
+                            break;
+                        case 'b+':
+                            $status = 'Скасовані';
+                            break;
+                        default:
+                            $status = 'Скасований';
+                            break;
+                    }
                 }
-            }
-            elseif ($status == 'Припинення дії') {
-                switch ($type->getRid()) {
-                    case 'f': $status = 'Припинила дію '; break;
-                    case 'b': $status = 'Припинило дію '; break;
-                    case 'b+': $status = 'Припинили дію '; break;
-                    default: $status = 'Припинив дію '; break;
+                if ($status == 'Затвердження') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Затверджена';
+                            break;
+                        case 'b':
+                            $status = 'Затверджено';
+                            break;
+                        case 'b+':
+                            $status = 'Затверджені';
+                            break;
+                        default:
+                            $status = 'Затверджений';
+                            break;
+                    }
                 }
-            }
-            elseif ($status == 'Зупинення дії') {
-                switch ($type->getRid()) {
-                    case 'f': $status = 'Зупинила дію '; break;
-                    case 'b': $status = 'Зупинило дію '; break;
-                    case 'b+': $status = 'Зупинили дію '; break;
-                    default: $status = 'Зупинив дію '; break;
+                elseif (mb_strpos($status, 'Набрання чинності') !== FALSE) {
+                    $status = preg_replace('| міжнародного договору|u', '', $status);
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = preg_replace('|Набрання чинності|u', 'Набрала чинності', $status);
+                            break;
+                        case 'b':
+                            $status = preg_replace('|Набрання чинності|u', 'Набрало чинності', $status);
+                            break;
+                        case 'b+':
+                            $status = preg_replace('|Набрання чинності|u', 'Набрали чинності', $status);
+                            break;
+                        default:
+                            $status = preg_replace('|Набрання чинності|u', 'Набрав чинності', $status);
+                            break;
+                    }
+                } elseif ($status == 'Введення в дію') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Введена в дію';
+                            break;
+                        case 'b':
+                            $status = 'Введено в дію';
+                            break;
+                        case 'b+':
+                            $status = 'Введені в дію';
+                            break;
+                        default:
+                            $status = 'Введений в дію';
+                            break;
+                    }
+                } elseif ($status == 'Припинення дії') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Припинила дію';
+                            break;
+                        case 'b':
+                            $status = 'Припинило дію';
+                            break;
+                        case 'b+':
+                            $status = 'Припинили дію';
+                            break;
+                        default:
+                            $status = 'Припинив дію';
+                            break;
+                    }
+                } elseif ($status == 'Зупинення дії') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Зупинила дію';
+                            break;
+                        case 'b':
+                            $status = 'Зупинило дію';
+                            break;
+                        case 'b+':
+                            $status = 'Зупинили дію';
+                            break;
+                        default:
+                            $status = 'Зупинив дію';
+                            break;
+                    }
+                } elseif ($status == 'Відновлення дії') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Відновила дію';
+                            break;
+                        case 'b':
+                            $status = 'Відновило дію';
+                            break;
+                        case 'b+':
+                            $status = 'Відновили дію';
+                            break;
+                        default:
+                            $status = 'Відновив дію';
+                            break;
+                    }
+                } elseif ($status == 'Не набрав чинності') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Не набрала чинності';
+                            break;
+                        case 'b':
+                            $status = 'Не набрало чинності';
+                            break;
+                        case 'b+':
+                            $status = 'Не набрали чинності';
+                            break;
+                        default:
+                            $status = 'Не набрав чинності';
+                            break;
+                    }
+                } elseif ($status == 'Підписання') {
+                    switch ($type->getRid()) {
+                        case 'f':
+                            $status = 'Підписана';
+                            break;
+                        case 'b':
+                            $status = 'Підписано';
+                            break;
+                        case 'b+':
+                            $status = 'Підписані';
+                            break;
+                        default:
+                            $status = 'Підписаний';
+                            break;
+                    }
+                } elseif ($status == 'Редакція') {
+                    $status = 'Додано нову редакцію в';
+                } elseif ($status == 'Тлумачення') {
+                    $status = 'Додано нове тлумачення в';
+                } elseif ($status == 'Приєднання' && $type == 'конвенція') {
+                    $status = 'Приєднання до';
+                    $type = 'конвенції';
                 }
-            }
-            elseif ($status == 'Відновлення дії') {
-                switch ($type->getRid()) {
-                    case 'f': $status = 'Відновила дію '; break;
-                    case 'b': $status = 'Відновило дію '; break;
-                    case 'b+': $status = 'Відновили дію '; break;
-                    default: $status = 'Відновив дію '; break;
+
+                if ($i > 0) {
+                    $status = mb_strtolower($status);
                 }
-            }
-            elseif ($status == 'Не набрав чинності') {
-                switch ($type->getRid()) {
-                    case 'f': $status = 'Не набрала чинності '; break;
-                    case 'b': $status = 'Не набрало чинності '; break;
-                    case 'b+': $status = 'Не набрали чинності '; break;
-                    default: $status = 'Не набрав чинності '; break;
-                }
-            }
-            elseif ($status == 'Редакція') {
-                $status = 'Додано нову редакцію в ';
-            }
-            elseif ($status == 'Тлумачення') {
-                $status = 'Додано нове тлумачення в ';
+                $i++;
             }
 
-            return $status . $type_name . ' "' . $title . '"' . $reason;
+            $last_status = array_pop($statuses);
+            $status = $statuses ? implode(', ', $statuses) . ' та ' . $last_status : $last_status;
+
+            $comment = $status . ' ' . $type_name . ' "' . $title . '"' . $reason;
+            $comment = preg_replace('|україн|u', 'Україн', $comment);
+
+            return $comment;
         }, $comment);
 
         return $comment;

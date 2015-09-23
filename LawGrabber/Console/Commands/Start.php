@@ -77,7 +77,7 @@ class Start extends Command
             $output = [];
             exec('pgrep -l -f "^php (.*?)artisan start"', $output);
             foreach ($output as $line) {
-                $pid = preg_replace('|([0-9]+)(\s.*)|', '$1', $line);
+                $pid = preg_replace('|([0-9]+)(\s.*)|u', '$1', $line);
                 if ($pid != getmypid()) {
                     exec("kill -9 $pid");
                 }

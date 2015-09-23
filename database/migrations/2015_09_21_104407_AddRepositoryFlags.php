@@ -13,10 +13,10 @@ class AddRepositoryFlags extends Migration
     public function up()
     {
         Schema::table('law_revisions', function (Blueprint $table) {
-            $table->boolean('r_zakon');
-            $table->index('r_zakon', 'rz');
-            $table->boolean('r_zakon-markdown');
-            $table->index('r_zakon-markdown', 'rzm');
+            $table->boolean('r_zakon')->default(0);
+            $table->boolean('r_zakon-markdown')->default(0);
+            $table->index('r_zakon');
+            $table->index('r_zakon-markdown');
         });
     }
 

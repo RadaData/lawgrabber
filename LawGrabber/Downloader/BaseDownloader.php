@@ -193,7 +193,7 @@ class BaseDownloader
 
         return [
             'status' => $status,
-            'html'   => preg_replace('|charset="?windows-1251"?|', 'charset="utf-8"', $html),
+            'html'   => preg_replace('|charset="?windows-1251"?|u', 'charset="utf-8"', $html),
         ];
     }
 
@@ -313,7 +313,7 @@ class BaseDownloader
     private function saveFile($path, $html)
     {
         $path = $this->URL2path($path);
-        $dir = preg_replace('|/[^/]*$|', '/', $path);
+        $dir = preg_replace('|/[^/]*$|u', '/', $path);
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
@@ -364,7 +364,7 @@ class BaseDownloader
         $protocol = '';
         if (preg_match('@^(https?|file|ftp)://@', $url, $matches)) {
             $protocol = $matches[0];
-            $url = preg_replace('@^(https?|file|ftp)://@', '', $url);
+            $url = preg_replace('@^(https?|file|ftp)://@u', '', $url);
         }
 
         if ($urlencode) {
@@ -377,8 +377,8 @@ class BaseDownloader
             $url = $protocol . implode('/', $new_url);
             if ($query) {
                 $query = urlencode($query);
-                $query = preg_replace('|%3d|i', '=', $query);
-                $query = preg_replace('|%26|i', '&', $query);
+                $query = preg_replace('|%3d|iu', '=', $query);
+                $query = preg_replace('|%26|iu', '&', $query);
                 $url .= '?' . $query;
             }
         }
@@ -399,7 +399,7 @@ class BaseDownloader
      */
     public function shortURL($url)
     {
-        $url = preg_replace('|' . $this->getWebsiteRegexp() . '|', '', $url);
+        $url = preg_replace('|' . $this->getWebsiteRegexp() . '|u', '', $url);
 
         if (strpos($url, '%') !== false) {
             $url = urldecode($url);
@@ -429,8 +429,8 @@ class BaseDownloader
     {
         $url = $this->fullURL($url, false);
 
-        $path = preg_replace('@(https?|file|ftp)://@', '', $url);
-        $path = preg_replace('@zakon[0-9]+\.rada@', 'zakon.rada', $path);
+        $path = preg_replace('@(https?|file|ftp)://@u', '', $url);
+        $path = preg_replace('@zakon[0-9]+\.rada@u', 'zakon.rada', $path);
 
         if (substr($path, -1) == '/') {
             $path .= 'index.html';
@@ -488,7 +488,7 @@ class BaseDownloader
      */
     public function detectJSProtection($html)
     {
-        if (preg_match('|<a href="?(.*)\?test=(.*)"? target="?_top"?><b>посилання</b></a>|', $html, $matches)) {
+        if (preg_match('|<a href="?(.*)\?test=(.*)"? target="?_top"?><b>посилання</b></a>|u', $html, $matches)) {
             return $matches[1] . '?test=' . $matches[2];
         }
 
@@ -501,7 +501,7 @@ class BaseDownloader
             return $raw_date;
         }
 
-        $raw_date = preg_replace('|([0-9]{2}\.[0-9]{2}\.[0-9]{4}).*|', '$1', $raw_date);
+        $raw_date = preg_replace('|([0-9]{2}\.[0-9]{2}\.[0-9]{4}).*|u', '$1', $raw_date);
         if (!preg_match('|[0-9]{2}\.[0-9]{2}\.[0-9]{4}|', $raw_date)) {
             $error_text = $error_text ?: "Date {$raw_date} is not valid date.";
             throw new Exceptions\WrongDateException($error_text);

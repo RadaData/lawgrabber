@@ -103,7 +103,7 @@ class RevisionDownloader extends BaseDownloader
         } else {
             try {
                 $title_text = crawler($html)->filterXPath('//div[@id="pan_title"]')->text();
-                if (preg_match('| від ([0-9\?]{2}\.[0-9\?]{2}\.[0-9\?]{4})|', $title_text, $matches)) {
+                if (preg_match('| від ([0-9\?]{2}\.[0-9\?]{2}\.[0-9\?]{4})|u', $title_text, $matches)) {
                     $raw_date = $matches[1];
                     if ($raw_date == '??.??.????') {
                         $revision_date = $raw_date;

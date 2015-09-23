@@ -50,16 +50,28 @@ class History extends Command
         $this->git = new Git($this, $is_raw ? 'zakon' : 'zakon-markdown');
 
         if ($create) {
-            DB::table('law_revisions')->update('r_' . $this->git->repository_name, 0);
+            $this->info('Resetting repository caches.');
+            DB::table('law_revisions')->update(['r_' . $this->git->repository_name => 0]);
+            
+            $this->info('Initializing repository.');
             $this->git->gitReset();
         }
 
         $this->forAllDatesWithLaws(function ($dates) {
+            $i = 0;
             foreach ($dates as $date) {
                 if ($this->isFutureDate($date->date)) {
                     $this->git->gitCheckIfOutdatedAndPush('master');
                 }
+                
                 $this->handleOneDayOfLaws($date->date);
+                
+                if ($i > 100) {
+                    $i = 0;
+                    $this->git->gitCheckIfOutdatedAndPush('master');
+                }
+                
+                $i++;
             }
         });
         $this->git->gitCheckIfOutdatedAndPush('master');
@@ -110,7 +122,7 @@ class History extends Command
             }
             
             DB::table('law_revisions')->where('date', $date)->whereIn('law_id', array_keys($commit))
-                ->update('r_' . $this->git->repository_name, 1);
+                ->update(['r_' . $this->git->repository_name => 1]);
         }
     }
 

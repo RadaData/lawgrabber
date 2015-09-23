@@ -103,7 +103,7 @@ class CardDownloader extends BaseDownloader
                 }
 
                 $comment = str_replace('<a name="Current"></a>', '', $comment);
-                $comment = preg_replace('|<u>(.*?)</u>|', '$1', $comment);
+                $comment = preg_replace('|<u>(.*?)</u>|u', '$1', $comment);
 
                 $data['revisions'][$last_revision]['comment'][] = $comment;
             }

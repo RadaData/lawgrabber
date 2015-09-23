@@ -35,7 +35,7 @@ class Type extends Model
                 'result' => 'f',
             ],
             [
-                'patterns' => ['узагальнення', 'зміни'],
+                'patterns' => ['узагальнення', 'зміни', 'правила'],
                 'result' => 'b+',
             ],
             [

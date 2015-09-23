@@ -44,7 +44,7 @@ class Git {
 
     public function getHistoryDir()
     {
-        return base_path() . '/' . trim(env('HISTORY_DIR', '../history'), '/');
+        return base_path() . '/' . trim(env('HISTORY_DIR', '../history'), '/') . '/' . $this->repository_name;
     }
 
     public function gitReset()
@@ -63,11 +63,26 @@ class Git {
             exec('rm -rf ' . $dir);
         }
         mkdir($dir, 0777, true);
-        exec('cd ' . $dir . '; git init; git remote add origin git@github.com:' . $this->github_account . '/' . $this->repository_name . '.git; ');
+        $git_remote = 'git@'. env('GITHUB_HOST', 'github.com') .':' . $this->github_account . '/' . $this->repository_name . '.git';
+        $command = <<<CM
+cd $dir;
+git init;
+git config user.email "radadata-bot@users.noreply.github.com";
+git config user.name "radadata-bot";
+git remote add origin $git_remote
+CM;
+
+        exec($command);
         $this->command->info("Git initialized.");
 
         copy(__DIR__ . '/README-' . $this->repository_name . '.md', $dir . '/README.md');
-        $command = "cd $dir; git add . ; GIT_AUTHOR_DATE='1970-01-01T00:00:00+0000' GIT_COMMITTER_DATE='1970-01-01T00:00:00+0000' git commit -m 'Перший комміт.' ; git push -q -f origin master;";
+
+        $command = <<<CM
+cd $dir;
+git add . ;
+GIT_AUTHOR_DATE='1970-01-01T00:00:00+0000' GIT_COMMITTER_DATE='1970-01-01T00:00:00+0000' git commit -m 'Перший комміт.' ;
+git push -q -f origin master;
+CM;
         exec($command);
     }
 
@@ -75,7 +90,8 @@ class Git {
     {
         $dir = $this->getHistoryDir();
         $date = $this->normalizeCommitDate($date);
-        $command = "cd $dir; git add . ; GIT_AUTHOR_DATE=$date GIT_COMMITTER_DATE=$date git commit -m '$message'";
+        $message = escapeshellarg($message);
+        $command = "cd $dir; git add . ; GIT_AUTHOR_DATE=$date GIT_COMMITTER_DATE=$date git commit -m $message";
         exec($command);
         $this->branch_status[$this->current_branch] = false;
         $this->command->info("Commit: $message");
