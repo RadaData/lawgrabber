@@ -73,7 +73,7 @@ git remote add origin $git_remote
 CM;
 
         exec($command);
-        $this->command->info("Git initialized.");
+        $this->command->info(date('Y-m-d H:i:s') . '| ' . "Git initialized.");
 
         copy(__DIR__ . '/README-' . $this->repository_name . '.md', $dir . '/README.md');
 
@@ -94,7 +94,7 @@ CM;
         $command = "cd $dir; git add . ; GIT_AUTHOR_DATE=$date GIT_COMMITTER_DATE=$date git commit -m $message";
         exec($command);
         $this->branch_status[$this->current_branch] = false;
-        $this->command->info("Commit: $message");
+        $this->command->info(date('Y-m-d H:i:s') . '| ' . "Commit: $message");
     }
 
     /**
@@ -125,7 +125,7 @@ CM;
             $this->branch_status[$branch] = false;
         }
         
-        $this->command->info("Checkout: $branch");
+        $this->command->info(date('Y-m-d H:i:s') . '| ' . "Checkout: $branch");
     }
 
     public function gitCheckIfOutdatedAndPush($branch = 'master')
@@ -158,6 +158,6 @@ CM;
             "base" => "master",
             "body" => $message,
         ));
-        $this->command->info("Pull request created: #{$pullRequest['id']}");
+        $this->command->info(date('Y-m-d H:i:s') . '| ' . "Pull request created: #{$pullRequest['id']}");
     }
 }
