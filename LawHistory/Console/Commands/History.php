@@ -66,7 +66,7 @@ class History extends Command
                 
                 $i += $this->handleOneDayOfLaws($date->date);
                 
-                if ($i > 100) {
+                if ($i > 10000) {
                     $i = 0;
                     $this->git->gitCheckIfOutdatedAndPush('master');
                 }
