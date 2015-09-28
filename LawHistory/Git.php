@@ -84,6 +84,9 @@ GIT_AUTHOR_DATE='1970-01-01T00:00:00+0000' GIT_COMMITTER_DATE='1970-01-01T00:00:
 git push -q -f origin master;
 CM;
         exec($command);
+
+        $this->current_branch = 'master';
+        $this->branch_status['master'] = true;
     }
 
     public function gitCommit($date, $message)

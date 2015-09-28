@@ -83,7 +83,7 @@ class History extends Command
     {
         $this->filterQuery(DB::table('law_revisions')
             ->select('date')->where('r_' . $this->git->repository_name, 0)
-            ->groupBy('date')->orderBy('date', 'desc'))->chunk(300, $func);
+            ->groupBy('date')->orderBy('date', 'asc'))->chunk(300, $func);
     }
 
     /**
