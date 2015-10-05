@@ -57,46 +57,48 @@ class History extends Command
             $this->git->gitReset();
         }
 
-        $this->forAllDatesWithLaws(function ($dates) {
-            $i = 0;
-            foreach ($dates as $date) {
-                if ($this->isFutureDate($date->date)) {
-                    $this->git->gitCheckIfOutdatedAndPush('master');
-                }
-                
-                $i += $this->handleOneDayOfLaws($date->date);
-                
-                if ($i > 10000) {
-                    $i = 0;
-                    $this->git->gitCheckIfOutdatedAndPush('master');
-                }
+        $dates = $this->allDatesWithLaws();
+        
+        $this->info('Dates to process: ' . count($dates));
+
+        $i = 0;
+        foreach ($dates as $date) {
+            if ($this->isFutureDate($date->date)) {
+                $this->git->gitCheckIfOutdatedAndPush('master');
             }
-        });
+            
+            $i += $this->handleOneDayOfLaws($date->date);
+            
+            if ($i > 10000) {
+                $i = 0;
+                $this->git->gitCheckIfOutdatedAndPush('master');
+            }
+        }
         $this->git->gitCheckIfOutdatedAndPush('master');
     }
     
-    public function isFutureDate($date) {
-        return $date > date('Y-m-d');
-    }
-
-    public function forAllDatesWithLaws($func)
+    public function allDatesWithLaws()
     {
-        $this->filterQuery(DB::table('law_revisions')
+        return $this->filterQuery(DB::table('law_revisions')
             ->select('date')->where('r_' . $this->git->repository_name, 0)
-            ->groupBy('date')->orderBy('date', 'asc'))->chunk(300, $func);
+            ->groupBy('date')->orderBy('date', 'asc'))->get();
     }
-
+    
     /**
      * @param Eloquent\Builder|Query\Builder $query
      * @return Eloquent\Builder|Query\Builder
      */
     private function filterQuery($query)
     {
-//        $date = '1991-11-05';
-//        $query->whereIn('law_id', ['254к/96-вр', '586-18'])
-//            ->where('date', '>=', $date);
+//        $date1 = '1947-12-02';
+//        $date2 = '1950-12-02';
+//        $query->where('date', '>=', $date1)->where('date', '<=', $date2);
         
         return $query;
+    }
+    
+    public function isFutureDate($date) {
+        return $date > date('Y-m-d');
     }
 
     public function handleOneDayOfLaws($date)
