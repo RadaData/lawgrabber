@@ -146,7 +146,7 @@ CM;
         }
         
         $dir = $this->getHistoryDir();
-        $command = "cd $dir; git checkout '$branch'; git push -u -f origin '$branch'";
+        $command = "cd $dir; git checkout '$branch'; git push -u -f origin '$branch'; git gc";
         exec($command);
         $this->branch_status[$branch] = true;
         $this->command->info("Push: $branch");
