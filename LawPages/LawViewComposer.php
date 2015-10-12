@@ -56,12 +56,23 @@ class LawViewComposer
 
         return $data;
     }
+
+    private function setRevisionState(Revision $revision, $state)
+    {
+        $revision->state = $state;
+        $revision->save();
+        return $state;
+    }
     
     public function getRevisionState(Revision $revision) {
-        if ($revision->getLaw()->state == 'Не визначено') {
-            return 'Не визначено';
+        if ($revision->state) {
+            return $revision->state;
         }
-        
+
+        if ($revision->getLaw()->state == 'Не визначено') {
+            return $this->setRevisionState($revision, 'Не визначено');
+        }
+
         $activities = [
             'Прийняття' => 'Набирає чинності',
             'Введення в дію' => 'Чинний',
@@ -81,15 +92,15 @@ class LawViewComposer
             }
         }
         if ($result) {
-            return $result;
+            return $this->setRevisionState($revision, $result);
         }
-        
+
         $previous_revision = $revision->getPreviousRevision();
         if ($previous_revision) {
-            return $this->getRevisionState($previous_revision);
+            return $this->setRevisionState($revision, $this->getRevisionState($previous_revision));
         }
         else {
-            return $revision->getLaw()->state;
+            return $this->setRevisionState($revision, $revision->getLaw()->state);
         }
     }
 
