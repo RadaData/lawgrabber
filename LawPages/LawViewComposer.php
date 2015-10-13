@@ -7,7 +7,6 @@ use LawGrabber\Laws\Exceptions\LawHasNoTextAtRevision;
 use LawGrabber\Laws\Law;
 use LawGrabber\Laws\Revision;
 use LawPages\Renderer\RenderManager;
-use DB;
 
 class LawViewComposer
 {
@@ -60,7 +59,7 @@ class LawViewComposer
 
     private function setRevisionState(Revision $revision, $state)
     {
-        DB::table('law_revisions')->where('id', $revision->id)->update(['state' => $state]);
+        Revision::where('id', $revision->id)->update(['state' => $state]);
         $revision->state = $state;
         return $state;
     }
