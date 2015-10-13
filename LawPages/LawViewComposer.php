@@ -59,8 +59,8 @@ class LawViewComposer
 
     private function setRevisionState(Revision $revision, $state)
     {
+        Revision::where('id', $revision->id)->update('state', $state);
         $revision->state = $state;
-        $revision->save();
         return $state;
     }
     
