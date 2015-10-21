@@ -105,24 +105,53 @@ class History extends Command
     {
         $commits = $this->groupRevisionsForCommits($date);
 
-        foreach ($commits as $commit) {
-            $branch = $this->getBranchName($commit, $date);
+        // Since there are lots of old commits, we process them in batches of one day.
+        if (!$this->isFutureDate($date)) {
+            $branch = 'master';
             $this->git->gitCheckout($branch);
 
-            $this->doChanges($commit);
+            $messages = [];
+            $affected = [];
+            foreach ($commits as $commit) {
+                $this->doChanges($commit);
+                $messages[] = $this->formatter->createCommitMessage($branch, $commit);
+                $affected = array_merge($affected, array_keys($commit));
+            }
 
-            $message = $this->formatter->createCommitMessage($branch, $commit);
+            if (count($messages) > 1) {
+                foreach ($messages as &$m) {
+                    $m = '- ' . $m;
+                }
+            }
+            $message = implode("\n", $messages);
+
             $this->git->gitCommit($date, $message);
 
-            if ($branch != 'master') {
-                $this->git->gitPush($branch);
-                $pr_title = $this->formatter->createPRTitle($branch, $commit);
-                $pr_body = $this->formatter->createPRBody($branch, $commit);
-                $this->git->gitSendPullRequest($branch, $pr_title, $pr_body);
-            }
-            
-            DB::table('law_revisions')->where('date', $date)->whereIn('law_id', array_keys($commit))
+            DB::table('law_revisions')->where('date', $date)->whereIn('law_id', $affected)
                 ->update(['r_' . $this->git->repository_name => 1]);
+
+        }
+        // For all future changes we do things one-commit-per-change, since that's required to create a pull request.
+        else {
+            foreach ($commits as $commit) {
+                $branch = $this->getBranchName($commit, $date);
+                $this->git->gitCheckout($branch);
+
+                $this->doChanges($commit);
+
+                $message = $this->formatter->createCommitMessage($branch, $commit);
+                $this->git->gitCommit($date, $message);
+
+                if ($branch != 'master') {
+                    $this->git->gitPush($branch);
+                    $pr_title = $this->formatter->createPRTitle($branch, $commit);
+                    $pr_body = $this->formatter->createPRBody($branch, $commit);
+                    $this->git->gitSendPullRequest($branch, $pr_title, $pr_body);
+                }
+
+                DB::table('law_revisions')->where('date', $date)->whereIn('law_id', array_keys($commit))
+                    ->update(['r_' . $this->git->repository_name => 1]);
+            }
         }
         return count($commits);
     }
