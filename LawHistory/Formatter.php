@@ -58,7 +58,7 @@ class Formatter {
             $url = urldecode($matches[1]);
             $title = $matches[2];
             if ($add_links) {
-                if (preg_match('%/laws/show/(.*?)(?:$|/ed|#|\?)%', $url, $matches)) {
+                if (preg_match('%/laws/(.*?)(?:$|/ed|#|\?)%', $url, $matches)) {
                     $law_id = $matches[1];
                     $url = $this->getLawURL($law_id, '/RadaData/zakon');
                 }
@@ -318,7 +318,7 @@ class Formatter {
         }
         $issuers = $law->issuers()->get()->all();
         $first_issuer = reset($issuers);
-        $prefix = $this->is_raw ? 'laws/show' : $first_issuer->group_name . '/' . $first_issuer->name ;
+        $prefix = $this->is_raw ? 'laws' : $first_issuer->group_name . '/' . $first_issuer->name ;
         $filename = $prefix . '/' . $law_id . '.md';
         return rtrim($base, '/') . '/' . $filename;
     }
