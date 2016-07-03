@@ -21,7 +21,7 @@ class Download extends Command
      *
      * @var string
      */
-    protected $signature = 'download
+    protected $signature = 'radadata:download
                             {law? : The law ID.}
                             {revision? : The revision date.}
                             {--l|law : Reset the download jobs pool and fill it with download jobs for NOT DOWNLOADED laws.}

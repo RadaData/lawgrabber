@@ -23,12 +23,18 @@ class ProxyManager
     private $useProxy;
 
     /**
+     * @var string Stores last connection time, if no proxy is used.
+     */
+    private $last_used;
+
+    /**
      * @param $proxyProvider
      */
     public function __construct($proxyProvider)
     {
         $this->proxyProvider = $proxyProvider;
         $this->useProxy = env('USE_PROXY', true);
+        $this->last_used = time();
     }
 
     /**
@@ -91,6 +97,7 @@ class ProxyManager
     public function getProxy()
     {
         if (!$this->useProxy()) {
+            $this->last_used = time();
             return json_decode(json_encode(['address' => 'localhost', 'ip' => 'localhost']), FALSE);
         }
 
@@ -134,6 +141,9 @@ class ProxyManager
      */
     public function getProxyLastUsageTime()
     {
+        if (!$this->useProxy()) {
+            return $this->last_used;
+        }
         return floor($this->getProxy()->last_used / 100);
     }
 

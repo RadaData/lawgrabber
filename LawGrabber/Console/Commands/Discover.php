@@ -22,7 +22,7 @@ class Discover extends Command
      *
      * @var string
      */
-    protected $signature = 'discover
+    protected $signature = 'radadata:discover
                             {--r|reset : Run law discovery from the beginning of time.}
                             {--m|reset-meta : Reset the law meta cache (issuers, types, etc.)}
                             {--d|re-download : Re-download any page from the live website.}';

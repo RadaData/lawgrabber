@@ -13,7 +13,7 @@ class Cleanup extends Command
      *
      * @var string
      */
-    protected $signature = 'cleanup
+    protected $signature = 'radadata:cleanup
                             {--a|all : Kill all proxies and jobs.}
                             {--j|jobs : Flush all jobs.}
                             {--p|proxies : Kill all proxies.}';
