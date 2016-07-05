@@ -84,6 +84,7 @@ class BaseDownloader
             'save_as'     => null,
         ];
         $options = array_merge($default_options, $options);
+        $opendata = isset($options['opendata']) && $options['opendata'] ? true : false;
 
         $save_as = $options['save_as'] ? $options['save_as'] : null;
 
@@ -95,7 +96,7 @@ class BaseDownloader
             $status = 200;
 
             try {
-                if (!$this->validate($html, $status, $options)) {
+                if (!$this->validate($save_as ?: $url, $html, $status, $options)) {
                     throw new \Exception('Can not validate saved file.');
                 }
 
@@ -128,11 +129,11 @@ class BaseDownloader
                 }
 
                 $attempts++;
-                $result = $this->doDownload($url);
+                $result = $this->doDownload($url, 5, $opendata);
                 $html = $result['html'];
                 $status = $result['status'];
 
-                if (!$this->validate($html, $status, $options)) {
+                if (!$this->validate($save_as ?: $url, $html, $status, $options)) {
                     continue;
                 }
 
@@ -168,21 +169,22 @@ class BaseDownloader
      * Perform the actual download.
      *
      * @param string $url
-     * @param int    $delay
+     * @param int $delay
+     * @param bool $opendata
      *
      * @return array
      */
-    private function doDownload($url, $delay = 5)
+    private function doDownload($url, $delay = 5, $opendata = false)
     {
         $client = PJClient::getInstance();
         if ($this->proxyManager->useProxy()) {
             $client->addOption('--proxy=' . $this->proxyManager->getProxyAddress());
         }
         $client->addOption('--load-images=false');
-        $request = $client->getMessageFactory()->createRequest($this->fullURL($url));
+        $request = $client->getMessageFactory()->createRequest($this->fullURL($url, true, $opendata));
         $request->setDelay($delay);
         $request->setTimeout(60000);
-        $request->addHeader('User-Agent', $this->identity->getUserAgent());
+        $request->addHeader('User-Agent', $this->identity->getUserAgent($opendata));
         $response = $client->getMessageFactory()->createResponse();
 
         $client->send($request, $response);
@@ -226,6 +228,7 @@ class BaseDownloader
     /**
      * Validate download result.
      *
+     * @param $path
      * @param $html
      * @param $status
      * @param $options
@@ -237,12 +240,14 @@ class BaseDownloader
      * @throws Exceptions\ProxyBanned
      * @throws Exceptions\UnknownProblem
      */
-    protected function validate(&$html, &$status, $options)
+    protected function validate($path, &$html, &$status, $options)
     {
+        $opendata = isset($options['opendata']) && $options['opendata'] ? true : false;
+
         // access denied
         if ($status == 403 || $this->detectFakeContent($html, '403')) {
             $this->proxyManager->banProxy();
-            throw new Exceptions\ProxyBanned($this->proxyManager->getProxyIp());
+            $this->download_error($path, $html, new Exceptions\ProxyBanned($this->proxyManager->getProxyIp()));
         }
 
         // document is missing or server might be down
@@ -253,7 +258,7 @@ class BaseDownloader
 
                 return false;
             } else {
-                throw new Exceptions\DocumentIsMissing();
+                $this->download_error($path, $html, new Exceptions\DocumentIsMissing());
             }
         }
 
@@ -266,28 +271,33 @@ class BaseDownloader
 
         // status is ok, but document content has errors
         if ($errors = $this->detectFakeContent($html, 'error')) {
-            throw new Exceptions\DocumentHasErrors($errors);
+            $this->download_error($path, $html, new Exceptions\DocumentHasErrors($errors));
         }
 
         // status is ok, but document JS protected
         if ($newUrl = $this->detectJSProtection($html)) {
-            $result = $this->doDownload($newUrl, 10);
+            $result = $this->doDownload($newUrl, 10, $opendata);
             $html = $result['html'];
             $status = $result['status'];
 
             if ($this->detectJSProtection($html)) {
-                throw new Exceptions\DocumentCantBeDownloaded('Strong JS protection.');
+                $this->download_error($path, $html, new Exceptions\DocumentCantBeDownloaded('Strong JS protection.'));
             }
 
             // do a second validation run on fresh content.
-            return $this->validate($html, $status, $options);
+            return $this->validate($path, $html, $status, $options);
         }
 
         if (!in_array($status, [200, 300, 301, 302, 303, 304, 307, 408])) {
-            throw new Exceptions\UnknownProblem("Download status is {$status}.", $this->shortURL($options['url']), isset($html) ? $html : '{NO DATA}');
+            $this->download_error($path, $html, new Exceptions\UnknownProblem("Download status is {$status}.", $this->shortURL($options['url']), isset($html) ? $html : '{NO DATA}'));
         }
 
         return true;
+    }
+
+    public function download_error($path, $html, $exception) {
+        $this->saveFile('error/' . $path, $html);
+        throw $exception;
     }
 
     /**
@@ -353,11 +363,12 @@ class BaseDownloader
      * Return full URL (with domain name) of the page by given path or short url.
      *
      * @param string $url Path or short URL.
-     * @param bool   $urlencode
+     * @param bool $urlencode
+     * @param bool $opendata
      *
      * @return mixed|string
      */
-    public function fullURL($url, $urlencode = true)
+    public function fullURL($url, $urlencode = true, $opendata = false)
     {
         $url = $this->shortURL($url);
 
@@ -384,7 +395,7 @@ class BaseDownloader
         }
 
         if (!preg_match('@^(https?|file|ftp)://@', $url)) {
-            $url = $this->identity->getMirror() . $url;
+            $url = $this->identity->getMirror($opendata) . $url;
         }
 
         return $url;

@@ -31,6 +31,7 @@ class Identity
      * @var array
      */
     private $website = array(
+        'main' => 'http://zakon.rada.gov.ua',
         'mirrors' => array(
             'http://zakon1.rada.gov.ua',
             'http://zakon2.rada.gov.ua',
@@ -49,8 +50,12 @@ class Identity
      *
      * @return string
      */
-    public function getUserAgent()
+    public function getUserAgent($opendata = false)
     {
+        if ($opendata) {
+            return 'OpenData';
+        }
+
         return $this->user_agents[$this->active_user_agent];
     }
 
@@ -59,8 +64,12 @@ class Identity
      *
      * @return string
      */
-    public function getMirror()
+    public function getMirror($opendata = false)
     {
+        if ($opendata) {
+            return $this->website['main'];
+        }
+
         if (!isset($this->website['shuffled']) || !$this->website['shuffled']) {
             shuffle($this->website['mirrors']);
             $this->website['shuffled'] = 1;
