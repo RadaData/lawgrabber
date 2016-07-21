@@ -13,7 +13,7 @@ class Check extends Command
      *
      * @var string
      */
-    protected $signature = 'radadata:check
+    protected $signature = 'rd:check
                             {--f|fix : Try to fix all problems.}
                             {--o|old_files : Move old downloads to new locations.}';
 

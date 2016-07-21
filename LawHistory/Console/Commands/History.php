@@ -17,7 +17,7 @@ class History extends Command
      *
      * @var string
      */
-    protected $signature = 'history
+    protected $signature = 'rd:history
                             {--c|create : Whether or not to create new fresh repository.}
                             {--r|raw : Whether or not to put raw texts into repository.}
                             {--d|date : Generate history up to this date.}';

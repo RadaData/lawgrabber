@@ -15,7 +15,7 @@ class Status extends Command
      *
      * @var string
      */
-    protected $signature = 'radadata:status';
+    protected $signature = 'rd:status';
 
     /**
      * The console command description.

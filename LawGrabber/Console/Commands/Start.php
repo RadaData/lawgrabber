@@ -16,7 +16,7 @@ class Start extends Command
      *
      * @var string
      */
-    protected $signature = 'radadata:start
+    protected $signature = 'rd:start
                             {--s|single : Run single instance of the script (old instances will be terminated).}
                             {--p|proxies= : Whether or not to use proxy servers and how much proxies to create.}
                             {--k|kill_old_proxies : Kill old proxies and create new.}
